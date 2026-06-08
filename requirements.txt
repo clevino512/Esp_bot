@@ -1,0 +1,110 @@
+# =============================================================
+# UniBot ESPA — Backend Python Dependencies
+# PFE STIC 2025-2026 | ESPA Antsiranana
+# =============================================================
+# Installation : pip install -r requirements.txt
+# =============================================================
+
+# -------------------------------------------------------
+# WEB FRAMEWORK — FastAPI + ASGI
+# -------------------------------------------------------
+fastapi==0.111.1
+uvicorn[standard]==0.30.1
+gunicorn==22.0.0               # Serveur WSGI production
+python-multipart==0.0.9        # Upload fichiers (documents KB)
+httpx==0.27.0                  # Client HTTP async (LLM API)
+websockets==12.0               # WebSocket (streaming réponses)
+
+# -------------------------------------------------------
+# NLP — LangChain + Orchestration RAG
+# -------------------------------------------------------
+langchain==0.2.16
+langchain-community==0.2.16
+langchain-openai==0.1.23
+langchain-text-splitters==0.2.4
+
+# -------------------------------------------------------
+# EMBEDDINGS — Sentence Transformers
+# -------------------------------------------------------
+sentence-transformers==3.1.1
+torch==2.4.1                   # PyTorch CPU (suffisant pour embeddings)
+transformers==4.44.2
+huggingface-hub==0.24.7
+
+# -------------------------------------------------------
+# BASE VECTORIELLE
+# -------------------------------------------------------
+chromadb==0.5.20               # Base vectorielle principale
+faiss-cpu==1.8.0               # Index vectoriel haute performance (CPU)
+
+# -------------------------------------------------------
+# TRAITEMENT DOCUMENTS (Base de Connaissances)
+# -------------------------------------------------------
+pypdf==4.3.1                   # Lecture PDFs
+pdfplumber==0.11.4             # Extraction texte/tableaux PDFs avec layout
+python-docx==1.1.2             # Lecture documents Word
+openpyxl==3.1.5               # Lecture fichiers Excel
+markdown==3.7                  # Parsing Markdown
+beautifulsoup4==4.12.3         # Parsing HTML
+
+# -------------------------------------------------------
+# ASR — Reconnaissance Vocale Automatique
+# -------------------------------------------------------
+openai-whisper==20240930       # Whisper ASR (en ligne / GPU)
+vosk==0.3.45                   # ASR hors-ligne léger
+pyaudio==0.2.14                # Capture audio
+soundfile==0.12.1              # Lecture/écriture fichiers audio
+librosa==0.10.2                # Traitement signal audio
+numpy==1.26.4                  # Calcul numérique
+
+# -------------------------------------------------------
+# TTS — Synthèse Vocale
+# -------------------------------------------------------
+gTTS==2.5.1                    # Google Text-to-Speech (en ligne)
+TTS==0.22.0                    # Coqui TTS (hors-ligne)
+pyttsx3==2.90                  # TTS système (fallback)
+
+# -------------------------------------------------------
+# BASE DE DONNÉES
+# -------------------------------------------------------
+asyncpg==0.29.0                # Driver PostgreSQL async
+sqlalchemy[asyncio]==2.0.31    # ORM async
+alembic==1.13.2                # Migrations BDD
+redis[hiredis]==5.0.8          # Client Redis
+psycopg2-binary==2.9.9         # Driver PostgreSQL sync (migrations)
+
+# -------------------------------------------------------
+# AUTHENTIFICATION & SÉCURITÉ
+# -------------------------------------------------------
+python-jose[cryptography]==3.3.0  # JWT tokens
+passlib[bcrypt]==1.7.4         # Hashage mots de passe
+slowapi==0.1.9                 # Rate limiting API
+
+# -------------------------------------------------------
+# CONFIGURATION & VALIDATION
+# -------------------------------------------------------
+pydantic==2.8.2                # Validation données (intégré FastAPI)
+pydantic-settings==2.4.0       # Configuration via .env
+python-dotenv==1.0.1           # Chargement .env
+
+# -------------------------------------------------------
+# LOGGING & MONITORING
+# -------------------------------------------------------
+structlog==24.4.0              # Logging structuré JSON
+rich==13.7.1                   # Affichage terminal coloré (dev)
+
+# -------------------------------------------------------
+# ÉVALUATION & MÉTRIQUES NLP
+# -------------------------------------------------------
+nltk==3.9.1                    # Tokenisation, BLEU score
+rouge-score==0.1.2             # Métriques ROUGE
+scikit-learn==1.5.1            # Métriques ML (cosine similarity)
+
+# -------------------------------------------------------
+# TESTS
+# -------------------------------------------------------
+pytest==8.3.2
+pytest-asyncio==0.23.8
+pytest-cov==5.0.0
+httpx==0.27.0                  # Client test async FastAPI
+factory-boy==3.3.1             # Fixtures de test
