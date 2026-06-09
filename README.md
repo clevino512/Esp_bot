@@ -349,7 +349,7 @@ unibot-espa/
 
 ```bash
 # 1. Cloner le dépôt
-git clone https://github.com/espa-antsiranana/unibot-espa.git
+git clone https://github.com/espa-antsiranana/esp-bot.git
 cd unibot-espa
 
 # 2. Configurer les variables d'environnement

@@ -27,7 +27,7 @@ langchain-text-splitters==0.2.4
 # EMBEDDINGS — Sentence Transformers
 # -------------------------------------------------------
 sentence-transformers==3.1.1
-torch==2.4.1                   # PyTorch CPU (suffisant pour embeddings)
+torch==2.12.0                # PyTorch CPU (suffisant pour embeddings)
 transformers==4.44.2
 huggingface-hub==0.24.7
 
@@ -35,7 +35,7 @@ huggingface-hub==0.24.7
 # BASE VECTORIELLE
 # -------------------------------------------------------
 chromadb==0.5.20               # Base vectorielle principale
-faiss-cpu==1.8.0               # Index vectoriel haute performance (CPU)
+faiss-cpu==1.13.2.0               # Index vectoriel haute performance (CPU)
 
 # -------------------------------------------------------
 # TRAITEMENT DOCUMENTS (Base de Connaissances)
@@ -50,7 +50,7 @@ beautifulsoup4==4.12.3         # Parsing HTML
 # -------------------------------------------------------
 # ASR — Reconnaissance Vocale Automatique
 # -------------------------------------------------------
-openai-whisper==20240930       # Whisper ASR (en ligne / GPU)
+openai-whisper>=20240930      # Whisper ASR (en ligne / GPU)
 vosk==0.3.45                   # ASR hors-ligne léger
 pyaudio==0.2.14                # Capture audio
 soundfile==0.12.1              # Lecture/écriture fichiers audio

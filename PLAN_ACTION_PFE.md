@@ -2,13 +2,6 @@
 ## UniBot ESPA : Chatbot Universitaire Bimodal (Texte & Voix)
 ### ESPA Antsiranana | Université d'Antsiranana
 
----
-
-> **Document produit par :** Consultant Senior en Architecture Logicielle  
-> **Encadreurs :** Dr. HDR ANDRIANAJAINA Todizara & Mr. RAKOTOARIJAONA Raonirivo  
-> **Date :** Juin 2026
-
----
 
 ## PARTIE I — ANALYSE STRATÉGIQUE
 
