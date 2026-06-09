@@ -1,0 +1,188 @@
+version: '3.9'
+
+# =============================================================
+# UniBot ESPA — Docker Compose (Développement)
+# Université d'Antsiranana | PFE STIC 2025-2026
+# =============================================================
+
+services:
+
+  # -----------------------------------------------------------
+  # BACKEND — FastAPI + Python NLP Engine
+  # -----------------------------------------------------------
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: development
+    container_name: unibot_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app                    # Hot-reload développement
+      - ./knowledge-base:/app/knowledge-base
+      - backend_models:/app/.cache        # Cache modèles HuggingFace/Whisper
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1
+    env_file:
+      - .env
+    depends_on:
+      chromadb:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - unibot_net
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload --log-level info
+
+  # -----------------------------------------------------------
+  # FRONTEND — React + Vite (Développement)
+  # -----------------------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: development
+    container_name: unibot_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend/src:/app/src           # Hot-reload développement
+      - /app/node_modules                 # Préserver node_modules du container
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000
+    networks:
+      - unibot_net
+    command: npm run dev -- --host 0.0.0.0
+
+  # -----------------------------------------------------------
+  # CHROMADB — Base Vectorielle pour embeddings RAG
+  # -----------------------------------------------------------
+  chromadb:
+    image: chromadb/chroma:0.5.20
+    container_name: unibot_chromadb
+    restart: unless-stopped
+    ports:
+      - "8001:8000"
+    volumes:
+      - chromadb_data:/chroma/chroma
+    environment:
+      - CHROMA_SERVER_AUTH_CREDENTIALS_PROVIDER=chromadb.auth.token.TokenConfigServerAuthCredentialsProvider
+      - CHROMA_SERVER_AUTH_TOKEN_TRANSPORT_HEADER=AUTHORIZATION
+      - ANONYMIZED_TELEMETRY=FALSE
+      - IS_PERSISTENT=TRUE
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - unibot_net
+
+  # -----------------------------------------------------------
+  # POSTGRESQL — Base relationnelle (logs, users, metrics)
+  # -----------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: unibot_postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql:ro
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-unibot_db}
+      - POSTGRES_USER=${POSTGRES_USER:-unibot_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-unibot_user} -d ${POSTGRES_DB:-unibot_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - unibot_net
+
+  # -----------------------------------------------------------
+  # REDIS — Cache sessions et historique conversations
+  # -----------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: unibot_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: >
+      redis-server
+      --requirepass ${REDIS_PASSWORD}
+      --appendonly yes
+      --save 60 1000
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - unibot_net
+
+  # -----------------------------------------------------------
+  # OLLAMA — LLM local hors-ligne (Mistral 7B)
+  # Mode optionnel — activer si mode hors-ligne requis
+  # -----------------------------------------------------------
+  ollama:
+    image: ollama/ollama:latest
+    container_name: unibot_ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    environment:
+      - OLLAMA_KEEP_ALIVE=24h
+    profiles:
+      - offline                           # Activer avec: docker compose --profile offline up
+    networks:
+      - unibot_net
+    # Pour GPU NVIDIA décommenter :
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+# =============================================================
+# VOLUMES PERSISTANTS
+# =============================================================
+volumes:
+  chromadb_data:
+    driver: local
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  backend_models:
+    driver: local           # Cache modèles HuggingFace/Whisper (~2-4 GB)
+  ollama_models:
+    driver: local           # Modèles Ollama (~4-7 GB selon modèle)
+
+# =============================================================
+# RÉSEAUX
+# =============================================================
+networks:
+  unibot_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
