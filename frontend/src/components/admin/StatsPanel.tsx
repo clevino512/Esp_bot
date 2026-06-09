@@ -12,16 +12,7 @@ import {
   Cell,
   Legend,
 } from 'recharts'
-import {
-  MessageSquare,
-  CheckCircle,
-  Clock,
-  Mic,
-  FileText,
-  Hash,
-  Target,
-  Users,
-} from 'lucide-react'
+import { MessageSquare, CircleCheck as CheckCircle, Clock, Mic, FileText, Hash, Target, Users } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { getDashboardStats } from '@/services/adminService'

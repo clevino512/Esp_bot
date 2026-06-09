@@ -1,4 +1,4 @@
-import { Mic, MicOff, Loader2, X } from 'lucide-react'
+import { Mic, MicOff, Loader as Loader2, X } from 'lucide-react'
 import { clsx } from 'clsx'
 import type { RecordingState } from '@/types'
 import { formatAudioDuration } from '@/services/voiceService'

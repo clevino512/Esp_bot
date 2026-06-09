@@ -1,17 +1,6 @@
 import { useState, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import {
-  Upload,
-  FileText,
-  Trash2,
-  RefreshCw,
-  Search,
-  Filter,
-  MoreVertical,
-  CheckCircle,
-  AlertCircle,
-  Loader2,
-} from 'lucide-react'
+import { Upload, FileText, Trash2, RefreshCw, Search, Filter, MoveVertical as MoreVertical, CircleCheck as CheckCircle, CircleAlert as AlertCircle, Loader as Loader2 } from 'lucide-react'
 import { formatDistanceToNow, parseISO } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { clsx } from 'clsx'

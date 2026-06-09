@@ -1,12 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import {
-  CheckCircle,
-  XCircle,
-  MessageSquare,
-  Mic,
-  TrendingUp,
-  AlertTriangle,
-} from 'lucide-react'
+import { CircleCheck as CheckCircle, Circle as XCircle, MessageSquare, Mic, TrendingUp, TriangleAlert as AlertTriangle } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { getDashboardStats } from '@/services/adminService'

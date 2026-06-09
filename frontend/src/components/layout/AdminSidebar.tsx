@@ -1,15 +1,5 @@
 import { NavLink, Link } from 'react-router-dom'
-import {
-  GraduationCap,
-  LayoutDashboard,
-  FileText,
-  MessageSquare,
-  BarChart2,
-  Settings,
-  LogOut,
-  X,
-  ChevronRight,
-} from 'lucide-react'
+import { GraduationCap, LayoutDashboard, FileText, MessageSquare, ChartBar as BarChart2, Settings, LogOut, X, ChevronRight } from 'lucide-react'
 import { clsx } from 'clsx'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/Button'
