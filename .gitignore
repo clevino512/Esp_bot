@@ -1,0 +1,23 @@
+# Virtual environment
+.venv/
+env/
+venv/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Logs
+*.log
+
+# Base de données SQLite (si tu en utilises)
+*.sqlite3
+
+# VS Code / IDE
+.vscode/
+.idea/
