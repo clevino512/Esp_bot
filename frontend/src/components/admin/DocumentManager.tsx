@@ -15,12 +15,16 @@ import { Card } from '@/components/ui/Card'
 import { PageSpinner } from '@/components/ui/Spinner'
 
 const CATEGORY_OPTIONS: { value: DocumentCategory; label: string }[] = [
-  { value: 'reglements', label: 'Règlements' },
-  { value: 'calendriers', label: 'Calendriers' },
-  { value: 'procedures', label: 'Procédures' },
-  { value: 'faq', label: 'FAQ' },
-  { value: 'guides', label: 'Guides' },
-  { value: 'autres', label: 'Autres' },
+  { value: 'admission', label: 'Admission' },
+  { value: 'inscription', label: 'Inscription' },
+  { value: 'examens', label: 'Examens' },
+  { value: 'notes', label: 'Notes' },
+  { value: 'boursers', label: 'Bourses' },
+  { value: 'stages', label: 'Stages' },
+  { value: 'diplomes', label: 'Diplomes' },
+  { value: 'emploi_du_temps', label: 'Emploi du temps' },
+  { value: 'reglement', label: 'Reglement' },
+  { value: 'general', label: 'General' },
 ]
 
 const STATUS_COLORS: Record<KnowledgeDocument['status'], 'success' | 'warning' | 'error' | 'default'> = {
@@ -53,16 +57,18 @@ export function DocumentManager() {
 
   // Upload form state
   const [uploadFile, setUploadFile] = useState<File | null>(null)
-  const [uploadCategory, setUploadCategory] = useState<DocumentCategory>('procedures')
+  const [uploadCategory, setUploadCategory] = useState<DocumentCategory>('general')
   const [uploadDesc, setUploadDesc] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const dropRef = useRef<HTMLDivElement>(null)
 
-  const { data: documents = [], isLoading } = useQuery({
+  const { data: documentsData, isLoading } = useQuery({
     queryKey: ['documents'],
-    queryFn: getDocuments,
+    queryFn: () => getDocuments({ page: 1, pageSize: 100 }),
     refetchInterval: 5000,
   })
+
+  const documents = documentsData?.documents || []
 
   const uploadMutation = useMutation({
     mutationFn: () => uploadDocument(uploadFile!, uploadCategory, uploadDesc),
@@ -97,7 +103,7 @@ export function DocumentManager() {
 
   const filtered = documents.filter(doc => {
     const matchSearch = doc.title.toLowerCase().includes(search.toLowerCase()) ||
-      doc.filename.toLowerCase().includes(search.toLowerCase())
+      (doc.filename?.toLowerCase().includes(search.toLowerCase()) ?? false)
     const matchCat = categoryFilter === 'all' || doc.category === categoryFilter
     return matchSearch && matchCat
   })
@@ -197,7 +203,7 @@ export function DocumentManager() {
                     </span>
                   </td>
                   <td className="px-3 py-3.5 hidden lg:table-cell">
-                    <span className="text-sm text-neutral-500 dark:text-neutral-400">{formatBytes(doc.size)}</span>
+                    <span className="text-sm text-neutral-500 dark:text-neutral-400">{doc.size ? formatBytes(doc.size) : '—'}</span>
                   </td>
                   <td className="px-3 py-3.5 hidden xl:table-cell">
                     <span className="text-sm text-neutral-500 dark:text-neutral-400">

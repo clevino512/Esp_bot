@@ -20,11 +20,12 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { PageSpinner } from '@/components/ui/Spinner'
 
-const STATUS_CONFIG: Record<ConversationLog['status'], { label: string; variant: BadgeVariant }> = {
-  resolved: { label: 'Résolu', variant: 'success' },
-  unresolved: { label: 'Non résolu', variant: 'warning' },
+const STATUS_CONFIG: Record<string, { label: string; variant: BadgeVariant }> = {
+  resolved: { label: 'Resolu', variant: 'success' },
+  unanswered: { label: 'Sans reponse', variant: 'warning' },
   fallback: { label: 'Hors domaine', variant: 'warning' },
-  escalated: { label: 'Escaladé', variant: 'error' },
+  escalated: { label: 'Escalade', variant: 'error' },
+  answered: { label: 'Repondu', variant: 'success' },
 }
 
 function ConfidenceBar({ value }: { value: number }) {
@@ -42,7 +43,10 @@ function ConfidenceBar({ value }: { value: number }) {
 
 function LogRow({ log }: { log: ConversationLog }) {
   const [expanded, setExpanded] = useState(false)
-  const statusConf = STATUS_CONFIG[log.status]
+  const statusConf = STATUS_CONFIG[log.status] || STATUS_CONFIG.answered
+  const responseTime = log.responseTime || 0
+  const query = log.query || log.userQuestion || ''
+  const response = log.response || log.botResponse || ''
 
   return (
     <div className="border-b border-neutral-100 dark:border-neutral-800 last:border-0">
@@ -59,22 +63,24 @@ function LogRow({ log }: { log: ConversationLog }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-3 mb-1">
             <p className="text-sm font-medium text-neutral-900 dark:text-white truncate pr-4">
-              {log.userQuestion}
+              {query}
             </p>
             <div className="flex items-center gap-2 flex-shrink-0">
               <Badge variant={statusConf.variant}>{statusConf.label}</Badge>
               {log.feedback === 'positive' && <ThumbsUp className="w-3.5 h-3.5 text-success-500" />}
+              {log.feedback === 'helpful' && <ThumbsUp className="w-3.5 h-3.5 text-success-500" />}
               {log.feedback === 'negative' && <ThumbsDown className="w-3.5 h-3.5 text-error-500" />}
+              {log.feedback === 'not_helpful' && <ThumbsDown className="w-3.5 h-3.5 text-error-500" />}
               {expanded ? <ChevronUp className="w-4 h-4 text-neutral-400" /> : <ChevronDown className="w-4 h-4 text-neutral-400" />}
             </div>
           </div>
           <div className="flex items-center gap-4">
             <span className="text-xs text-neutral-500 dark:text-neutral-400">
-              {format(parseISO(log.timestamp), "d MMM 'à' HH:mm", { locale: fr })}
+              {format(parseISO(log.timestamp), "d MMM 'a' HH:mm", { locale: fr })}
             </span>
             <ConfidenceBar value={log.confidence} />
             <span className="text-xs text-neutral-400">
-              {log.responseTime < 1000 ? `${log.responseTime}ms` : `${(log.responseTime / 1000).toFixed(1)}s`}
+              {responseTime < 1000 ? `${responseTime}ms` : `${(responseTime / 1000).toFixed(1)}s`}
             </span>
           </div>
         </div>
@@ -84,9 +90,9 @@ function LogRow({ log }: { log: ConversationLog }) {
         <div className="px-5 pb-4 animate-slide-down">
           <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-xl p-4 space-y-3">
             <div>
-              <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide mb-1.5">Réponse du bot</p>
+              <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide mb-1.5">Reponse du bot</p>
               <p className="text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed line-clamp-4">
-                {log.botResponse}
+                {response}
               </p>
             </div>
             {log.sources.length > 0 && (
@@ -95,15 +101,17 @@ function LogRow({ log }: { log: ConversationLog }) {
                   Sources ({log.sources.length})
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {log.sources.map(s => (
-                    <span
-                      key={s.id}
-                      className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400 rounded-lg text-xs"
-                    >
-                      {s.document}
-                      {s.page && <span className="opacity-60">p. {s.page}</span>}
-                    </span>
-                  ))}
+                  {log.sources.map((s, idx) => {
+                    const sourceStr = typeof s === 'string' ? s : (s as { title?: string; document?: string }).title || (s as { title?: string; document?: string }).document || 'Source'
+                    return (
+                      <span
+                        key={idx}
+                        className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400 rounded-lg text-xs"
+                      >
+                        {sourceStr}
+                      </span>
+                    )
+                  })}
                 </div>
               </div>
             )}
@@ -126,7 +134,7 @@ export function LogsViewer() {
 
   const { data, isLoading } = useQuery({
     queryKey: ['logs', page, statusFilter],
-    queryFn: () => getLogs({ page, limit: LIMIT, status: statusFilter }),
+    queryFn: () => getLogs({ page, pageSize: LIMIT }),
   })
 
   const logs = data?.logs ?? []
@@ -134,10 +142,12 @@ export function LogsViewer() {
   const totalPages = Math.ceil(total / LIMIT)
 
   const filtered = search
-    ? logs.filter(l =>
-        l.userQuestion.toLowerCase().includes(search.toLowerCase()) ||
-        l.botResponse.toLowerCase().includes(search.toLowerCase())
-      )
+    ? logs.filter(l => {
+        const query = l.query || l.userQuestion || ''
+        const response = l.response || l.botResponse || ''
+        return query.toLowerCase().includes(search.toLowerCase()) ||
+               response.toLowerCase().includes(search.toLowerCase())
+      })
     : logs
 
   if (isLoading) return <PageSpinner />
@@ -159,10 +169,9 @@ export function LogsViewer() {
           className="h-10 pl-3 pr-8 rounded-xl border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
         >
           <option value="all">Tous les statuts</option>
-          <option value="resolved">Résolus</option>
+          <option value="resolved">Resolus</option>
           <option value="fallback">Hors domaine</option>
-          <option value="unresolved">Non résolus</option>
-          <option value="escalated">Escaladés</option>
+          <option value="unresolved">Non resolus</option>
         </select>
       </div>
 
@@ -171,7 +180,7 @@ export function LogsViewer() {
         {filtered.length === 0 ? (
           <div className="text-center py-12">
             <MessageSquare className="w-10 h-10 text-neutral-300 dark:text-neutral-600 mx-auto mb-3" />
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">Aucune conversation trouvée</p>
+            <p className="text-sm text-neutral-500 dark:text-neutral-400">Aucune conversation trouvee</p>
           </div>
         ) : (
           filtered.map(log => <LogRow key={log.id} log={log} />)
@@ -186,7 +195,7 @@ export function LogsViewer() {
           </p>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(p => p - 1)}>
-              Précédent
+              Precedent
             </Button>
             <span className="text-sm text-neutral-600 dark:text-neutral-400 px-2">
               {page} / {totalPages}

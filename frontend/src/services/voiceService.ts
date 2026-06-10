@@ -1,39 +1,111 @@
+import api from '@/lib/api'
 import type { ASRResponse } from '@/types'
 
-async function delay(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms))
+export interface BackendTranscriptionResponse {
+  id: string
+  text: string
+  language: string
+  duration_seconds: number
+  confidence: number
+  created_at: string
 }
 
-export async function transcribeAudio(_audioBlob: Blob): Promise<ASRResponse> {
-  // Simulated ASR response
-  await delay(1500 + Math.random() * 1000)
+export async function transcribeAudio(audioBlob: Blob, language = 'fr'): Promise<ASRResponse> {
+  const formData = new FormData()
+  formData.append('audio', audioBlob, 'recording.wav')
+  formData.append('language', language)
 
-  const mockTranscripts = [
-    'Quelles sont les dates d\'inscription pour cette année ?',
-    'Comment obtenir mon relevé de notes ?',
-    'Quand sont les examens du premier semestre ?',
-    'Quels documents faut-il pour s\'inscrire en master ?',
-    'Y a-t-il des bourses disponibles pour les étudiants ?',
-  ]
+  const response = await api.post<BackendTranscriptionResponse>(
+    '/voice/transcribe',
+    formData,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }
+  )
 
-  const transcript = mockTranscripts[Math.floor(Math.random() * mockTranscripts.length)]
+  const data = response.data
 
   return {
-    transcript,
-    confidence: 0.85 + Math.random() * 0.1,
-    language: 'fr',
-    duration: 2.5 + Math.random() * 3,
+    transcript: data.text,
+    confidence: data.confidence,
+    language: data.language,
+    duration: data.duration_seconds,
   }
 }
 
-export async function synthesizeSpeech(_text: string): Promise<string> {
-  // Returns a mock audio URL (in production would return a blob URL)
-  await delay(500)
-  return ''
+export async function synthesizeSpeech(text: string, language = 'fr'): Promise<Blob> {
+  const formData = new FormData()
+  formData.append('text', text)
+  formData.append('language', language)
+
+  const response = await api.post('/voice/synthesize', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+    responseType: 'blob',
+  })
+
+  return response.data
+}
+
+export async function voiceChat(
+  audioBlob: Blob,
+  sessionId?: string,
+  language = 'fr'
+): Promise<{
+  transcription: { text: string; confidence: number }
+  response: {
+    id: string
+    content: string
+    sources: Array<{
+      document_id: number
+      document_title: string
+      content: string
+      relevance_score: number
+    }>
+    confidence: number
+    is_fallback: boolean
+  }
+}> {
+  const formData = new FormData()
+  formData.append('audio', audioBlob, 'recording.wav')
+  formData.append('language', language)
+  if (sessionId) {
+    formData.append('session_id', sessionId)
+  }
+
+  const response = await api.post<{
+    transcription: { text: string; confidence: number }
+    response: {
+      id: string
+      content: string
+      sources: Array<{
+        document_id: number
+        document_title: string
+        content: string
+        relevance_score: number
+      }>
+      confidence: number
+      is_fallback: boolean
+    }
+  }>('/voice/chat', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  })
+
+  return response.data
 }
 
 export function formatAudioDuration(seconds: number): string {
   const mins = Math.floor(seconds / 60)
   const secs = Math.floor(seconds % 60)
   return `${mins}:${secs.toString().padStart(2, '0')}`
+}
+
+export function getAudioUrl(text: string): string {
+  const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
+  return `${apiBaseUrl}/voice/synthesize?text=${encodeURIComponent(text)}`
 }

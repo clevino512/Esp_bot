@@ -1,13 +1,20 @@
 import { useState, useCallback, useRef } from 'react'
 import toast from 'react-hot-toast'
 import type { Message } from '@/types'
-import { mockWelcomeMessages, generateId } from '@/data/mockData'
 import { sendMessage, createUserMessage, createAssistantMessage } from '@/services/chatService'
 
+const WELCOME_MESSAGE: Message = {
+  id: 'welcome',
+  role: 'assistant',
+  content: "Bonjour ! Je suis **UniBot**, l'assistant virtuel de l'ESPA.\n\nJe peux vous aider avec :\n- Les dates d'inscription\n- Les informations sur les examens\n- Les relevés de notes\n- Les bourses disponibles\n- Et d'autres questions académiques\n\nComment puis-je vous aider aujourd'hui ?",
+  mode: 'text',
+  timestamp: new Date(),
+}
+
 export function useChat() {
-  const [messages, setMessages] = useState<Message[]>(mockWelcomeMessages)
+  const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE])
   const [isLoading, setIsLoading] = useState(false)
-  const sessionId = useRef(generateId())
+  const sessionId = useRef(crypto.randomUUID())
 
   const addMessage = useCallback((message: Message) => {
     setMessages(prev => [...prev, message])
@@ -20,8 +27,7 @@ export function useChat() {
     addMessage(userMsg)
     setIsLoading(true)
 
-    // Optimistic typing indicator
-    const typingId = generateId()
+    const typingId = crypto.randomUUID()
     setMessages(prev => [...prev, {
       id: typingId,
       role: 'assistant',
@@ -43,7 +49,9 @@ export function useChat() {
       addMessage(assistantMsg)
     } catch (err) {
       setMessages(prev => prev.filter(m => m.id !== typingId))
-      toast.error('Erreur de connexion. Veuillez réessayer.')
+      const error = err as { response?: { data?: { detail?: string } } }
+      const message = error.response?.data?.detail || 'Erreur de connexion. Veuillez réessayer.'
+      toast.error(message)
       console.error(err)
     } finally {
       setIsLoading(false)
@@ -57,7 +65,7 @@ export function useChat() {
     addMessage(userMsg)
     setIsLoading(true)
 
-    const typingId = generateId()
+    const typingId = crypto.randomUUID()
     setMessages(prev => [...prev, {
       id: typingId,
       role: 'assistant',
@@ -79,7 +87,9 @@ export function useChat() {
       addMessage(assistantMsg)
     } catch (err) {
       setMessages(prev => prev.filter(m => m.id !== typingId))
-      toast.error('Erreur lors du traitement vocal.')
+      const error = err as { response?: { data?: { detail?: string } } }
+      const message = error.response?.data?.detail || 'Erreur lors du traitement vocal.'
+      toast.error(message)
       console.error(err)
     } finally {
       setIsLoading(false)
@@ -87,8 +97,8 @@ export function useChat() {
   }, [isLoading, addMessage])
 
   const clearMessages = useCallback(() => {
-    setMessages(mockWelcomeMessages)
-    sessionId.current = generateId()
+    setMessages([WELCOME_MESSAGE])
+    sessionId.current = crypto.randomUUID()
   }, [])
 
   return {

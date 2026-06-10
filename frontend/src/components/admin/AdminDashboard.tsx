@@ -2,51 +2,55 @@ import { useQuery } from '@tanstack/react-query'
 import { CircleCheck as CheckCircle, Circle as XCircle, MessageSquare, Mic, TrendingUp, TriangleAlert as AlertTriangle } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { getDashboardStats } from '@/services/adminService'
+import { getDashboardStats, getFallbackQuestions } from '@/services/adminService'
 import { Card, StatCard } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { PageSpinner } from '@/components/ui/Spinner'
 import { mockLogs } from '@/data/mockData'
 
 export function AdminDashboard() {
-  const { data: stats, isLoading } = useQuery({
+  const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ['dashboard-stats'],
-    queryFn: getDashboardStats,
+    queryFn: () => getDashboardStats(7),
   })
 
-  if (isLoading) return <PageSpinner />
+  const { data: fallbackQuestions } = useQuery({
+    queryKey: ['fallback-questions'],
+    queryFn: () => getFallbackQuestions(30, 3),
+  })
+
+  if (statsLoading) return <PageSpinner />
   if (!stats) return null
 
   const recentLogs = mockLogs.slice(0, 5)
-  const fallbackLogs = mockLogs.filter(l => l.status === 'fallback').slice(0, 3)
 
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Quick KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          label="Aujourd'hui"
-          value={stats.activeSessionsToday}
+          label="Conversations"
+          value={stats.totalConversations}
           icon={<MessageSquare className="w-5 h-5" />}
           color="blue"
         />
         <StatCard
-          label="Taux résolution"
-          value={`${Math.round(stats.resolvedRate * 100)}%`}
+          label="Taux résolu"
+          value={stats.helpfulRate !== undefined ? `${Math.round(stats.helpfulRate * 100)}%` : 'N/A'}
           icon={<CheckCircle className="w-5 h-5" />}
           change={{ value: 3, positive: true }}
           color="green"
         />
         <StatCard
-          label="Score MRR@5"
-          value={stats.mrr5Score.toFixed(2)}
+          label="Confiance moy."
+          value={stats.avgConfidence !== undefined ? `${Math.round(stats.avgConfidence * 100)}%` : 'N/A'}
           icon={<TrendingUp className="w-5 h-5" />}
           color="sky"
         />
         <StatCard
-          label="Usage vocal"
-          value={`${Math.round(stats.voiceUsageRate * 100)}%`}
-          icon={<Mic className="w-5 h-5" />}
+          label="Taux fallback"
+          value={stats.fallbackRate !== undefined ? `${Math.round(stats.fallbackRate * 100)}%` : 'N/A'}
+          icon={<AlertTriangle className="w-5 h-5" />}
           color="amber"
         />
       </div>
@@ -106,15 +110,15 @@ export function AdminDashboard() {
             </h3>
           </div>
           <div className="space-y-3">
-            {fallbackLogs.map(log => (
-              <div key={log.id} className="p-3 bg-warning-50 dark:bg-warning-900/10 border border-warning-200 dark:border-warning-800/30 rounded-xl">
+            {fallbackQuestions?.map((q, i) => (
+              <div key={i} className="p-3 bg-warning-50 dark:bg-warning-900/10 border border-warning-200 dark:border-warning-800/30 rounded-xl">
                 <p className="text-sm text-neutral-800 dark:text-neutral-200 mb-1.5">
-                  {log.userQuestion}
+                  {q.question}
                 </p>
                 <div className="flex items-center gap-2">
-                  <Badge variant="warning">Hors domaine</Badge>
+                  <Badge variant="warning">{q.count}x</Badge>
                   <span className="text-xs text-neutral-400">
-                    {format(parseISO(log.timestamp), 'd MMM', { locale: fr })}
+                    Hors domaine
                   </span>
                 </div>
               </div>

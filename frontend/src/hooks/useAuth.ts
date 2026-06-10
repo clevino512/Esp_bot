@@ -16,8 +16,9 @@ export function useAuth() {
       toast.success(`Bienvenue, ${user.name} !`)
       navigate('/admin')
     } catch (err) {
-      const error = err as Error
-      toast.error(error.message ?? 'Erreur de connexion')
+      const error = err as { response?: { data?: { detail?: string } } }
+      const message = error.response?.data?.detail || (err instanceof Error ? err.message : 'Erreur de connexion')
+      toast.error(message)
       throw err
     } finally {
       setLoading(false)
@@ -27,6 +28,8 @@ export function useAuth() {
   const logout = useCallback(async () => {
     try {
       await logoutService()
+    } catch {
+      // Ignore logout API errors, still clear local state
     } finally {
       clearAuth()
       toast.success('Déconnexion réussie')

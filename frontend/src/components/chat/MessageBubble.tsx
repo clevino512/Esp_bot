@@ -13,7 +13,7 @@ interface MessageBubbleProps {
 
 export function MessageBubble({ message }: MessageBubbleProps) {
   const [sourcesOpen, setSourcesOpen] = useState(false)
-  const [feedback, setFeedback] = useState<'positive' | 'negative' | null>(null)
+  const [feedback, setFeedback] = useState<'positive' | 'negative' | null>(message.feedback === 'helpful' ? 'positive' : message.feedback === 'not_helpful' ? 'negative' : null)
 
   const isUser = message.role === 'user'
   const isAssistant = message.role === 'assistant'
@@ -107,7 +107,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
                   >
                     <div className="flex items-start justify-between gap-2 mb-1.5">
                       <span className="text-xs font-medium text-neutral-800 dark:text-neutral-200 leading-tight">
-                        {source.document}
+                        {source.title || source.document}
                       </span>
                       <div className="flex items-center gap-1.5 flex-shrink-0">
                         {source.page && (
@@ -119,7 +119,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
                       </div>
                     </div>
                     <p className="text-xs text-neutral-500 dark:text-neutral-400 italic leading-relaxed line-clamp-2">
-                      "{source.excerpt}"
+                      "{source.content || source.excerpt}"
                     </p>
                   </div>
                 ))}

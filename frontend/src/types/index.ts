@@ -2,11 +2,14 @@
 
 export interface Source {
   id: string
-  document: string
-  category: string
+  documentId?: string
+  title?: string
+  document?: string
+  category?: string
   page?: number
   relevanceScore: number
-  excerpt: string
+  content?: string
+  excerpt?: string
 }
 
 export type MessageRole = 'user' | 'assistant' | 'system'
@@ -22,12 +25,14 @@ export interface Message {
   confidence?: number
   audioUrl?: string
   isStreaming?: boolean
+  feedback?: 'helpful' | 'not_helpful' | null
 }
 
 export interface ChatRequest {
   message: string
-  sessionId: string
+  sessionId?: string
   mode?: MessageMode
+  history?: Array<{ role: string; content: string }>
 }
 
 export interface ChatResponse {
@@ -37,6 +42,7 @@ export interface ChatResponse {
   confidence: number
   isFallback: boolean
   timestamp: string
+  sessionId?: string
 }
 
 // ── Voice ─────────────────────────────────────────────────────────────────────
@@ -58,21 +64,21 @@ export type RecordingState = 'idle' | 'requesting' | 'recording' | 'processing' 
 
 // ── Documents ─────────────────────────────────────────────────────────────────
 
-export type DocumentCategory = 'reglements' | 'calendriers' | 'procedures' | 'faq' | 'guides' | 'autres'
+export type DocumentCategory = 'admission' | 'inscription' | 'examens' | 'notes' | 'boursers' | 'stages' | 'diplomes' | 'emploi_du_temps' | 'reglement' | 'general'
 export type DocumentStatus = 'indexed' | 'processing' | 'error' | 'pending'
 
 export interface KnowledgeDocument {
   id: string
   title: string
-  filename: string
+  filename?: string
   category: DocumentCategory
   status: DocumentStatus
   chunkCount: number
   uploadedAt: string
   updatedAt: string
-  size: number
+  size?: number
   description?: string
-  tags: string[]
+  tags?: string[]
 }
 
 export interface DocumentChunk {
@@ -86,20 +92,23 @@ export interface DocumentChunk {
 
 // ── Logs ──────────────────────────────────────────────────────────────────────
 
-export type ConversationStatus = 'resolved' | 'unresolved' | 'fallback' | 'escalated'
+export type ConversationStatus = 'resolved' | 'unresolved' | 'fallback' | 'escalated' | 'answered'
 
 export interface ConversationLog {
   id: string
   sessionId: string
-  userQuestion: string
-  botResponse: string
-  sources: Source[]
+  query?: string
+  userQuestion?: string
+  response?: string
+  botResponse?: string
+  sources: string[] | Source[]
   confidence: number
   status: ConversationStatus
-  mode: MessageMode
+  isFallback?: boolean
+  mode?: MessageMode
   timestamp: string
-  responseTime: number
-  feedback?: 'positive' | 'negative'
+  responseTime?: number
+  feedback?: 'helpful' | 'not_helpful' | 'positive' | 'negative' | null
 }
 
 // ── Statistics ────────────────────────────────────────────────────────────────
@@ -121,16 +130,23 @@ export interface CategoryStats {
 
 export interface DashboardStats {
   totalConversations: number
-  resolvedRate: number
+  uniqueUsers?: number
+  resolvedRate?: number
   avgResponseTime: number
-  voiceUsageRate: number
+  avgConfidence?: number
+  voiceUsageRate?: number
+  fallbackRate?: number
+  helpfulRate?: number
   totalDocuments: number
+  activeDocuments?: number
   totalChunks: number
-  mrr5Score: number
-  activeSessionsToday: number
-  dailyStats: DailyStats[]
-  categoryStats: CategoryStats[]
-  topQuestions: { question: string; count: number }[]
+  mrr5Score?: number
+  activeSessionsToday?: number
+  dailyStats?: DailyStats[]
+  categoryStats?: CategoryStats[]
+  topQuestions?: { question: string; count: number }[]
+  periodStart?: string
+  periodEnd?: string
 }
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
@@ -139,8 +155,8 @@ export interface AdminUser {
   id: string
   email: string
   name: string
-  role: 'super_admin' | 'admin' | 'viewer'
-  lastLogin: string
+  role: 'admin' | 'user' | 'super_admin' | 'viewer'
+  lastLogin?: string
   createdAt: string
 }
 
