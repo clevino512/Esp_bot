@@ -1,0 +1,42 @@
+[
+  {
+    "question": "Quelles sont les dates d'inscription pour la nouvelle année universitaire ?",
+    "category": "inscription"
+  },
+  {
+    "question": "Comment puis-je obtenir mon relevé de notes ?",
+    "category": "notes"
+  },
+  {
+    "question": "Quand auront lieu les examens du semestre 1 ?",
+    "category": "examens"
+  },
+  {
+    "question": "Y a-t-il des bourses disponibles pour les étudiants ?",
+    "category": "boursers"
+  },
+  {
+    "question": "Comment fonctionne le système de stages à l'ESPA ?",
+    "category": "stages"
+  },
+  {
+    "question": "Quels sont les documents requis pour l'admission ?",
+    "category": "admission"
+  },
+  {
+    "question": "Quels diplômes sont proposés par l'ESPA ?",
+    "category": "diplomes"
+  },
+  {
+    "question": "Où puis-je trouver l'emploi du temps des cours ?",
+    "category": "emploi_du_temps"
+  },
+  {
+    "question": "Quel est le règlement intérieur de l'école ?",
+    "category": "reglement"
+  },
+  {
+    "question": "Comment contacter le secrétariat ?",
+    "category": "general"
+  }
+]
