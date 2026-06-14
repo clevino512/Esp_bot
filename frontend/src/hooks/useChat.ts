@@ -10,6 +10,7 @@ import {
 } from '@/services/chatService'
 
 const SESSION_KEY = 'unibot_session_id'
+const SESSION_DATE_KEY = 'unibot_session_date'
 
 const WELCOME_MESSAGE: Message = {
   id: 'welcome',
@@ -25,12 +26,21 @@ function getOrCreateSessionId(): string {
   if (stored) return stored
   const newId = crypto.randomUUID()
   localStorage.setItem(SESSION_KEY, newId)
+  localStorage.setItem(SESSION_DATE_KEY, new Date().toISOString())
   return newId
+}
+
+function getSessionDate(): Date | null {
+  const stored = localStorage.getItem(SESSION_DATE_KEY)
+  return stored ? new Date(stored) : null
 }
 
 export function useChat() {
   const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE])
   const [isLoading, setIsLoading] = useState(false)
+  const [historyRestored, setHistoryRestored] = useState(false)
+  const [restoredMessageCount, setRestoredMessageCount] = useState(0)
+  const [restoredFromDate, setRestoredFromDate] = useState<Date | null>(null)
   const sessionId = useRef<string>(getOrCreateSessionId())
 
   useEffect(() => {
@@ -46,9 +56,15 @@ export function useChat() {
                 : new Date(m.timestamp as unknown as string),
           }))
           setMessages([WELCOME_MESSAGE, ...restored])
+          setRestoredMessageCount(restored.length)
+          const firstTs = restored[0]?.timestamp
+          setRestoredFromDate(firstTs instanceof Date ? firstTs : null)
         }
+        setHistoryRestored(true)
       })
-      .catch(() => {})
+      .catch(() => {
+        setHistoryRestored(true)
+      })
   }, [])
 
   const addMessage = useCallback((message: Message) => {
@@ -83,15 +99,14 @@ export function useChat() {
           mode: 'text',
         })
         setMessages(prev => prev.filter(m => m.id !== typingId))
-        const assistantMsg = createAssistantMessage(response, 'text')
-        addMessage(assistantMsg)
+        addMessage(createAssistantMessage(response, 'text'))
       } catch (err) {
         setMessages(prev => prev.filter(m => m.id !== typingId))
         const error = err as { response?: { data?: { detail?: string } } }
-        const message =
+        toast.error(
           error.response?.data?.detail ||
-          'Erreur de connexion. Vérifiez que le serveur est démarré.'
-        toast.error(message)
+            'Erreur de connexion. Vérifiez que le serveur est démarré.'
+        )
       } finally {
         setIsLoading(false)
       }
@@ -127,14 +142,13 @@ export function useChat() {
           mode: 'voice',
         })
         setMessages(prev => prev.filter(m => m.id !== typingId))
-        const assistantMsg = createAssistantMessage(response, 'voice')
-        addMessage(assistantMsg)
+        addMessage(createAssistantMessage(response, 'voice'))
       } catch (err) {
         setMessages(prev => prev.filter(m => m.id !== typingId))
         const error = err as { response?: { data?: { detail?: string } } }
-        const message =
+        toast.error(
           error.response?.data?.detail || 'Erreur lors du traitement vocal.'
-        toast.error(message)
+        )
       } finally {
         setIsLoading(false)
       }
@@ -162,13 +176,22 @@ export function useChat() {
   const clearMessages = useCallback(() => {
     const newId = crypto.randomUUID()
     localStorage.setItem(SESSION_KEY, newId)
+    localStorage.setItem(SESSION_DATE_KEY, new Date().toISOString())
+    localStorage.removeItem('unibot_sus_submitted')
     sessionId.current = newId
     setMessages([WELCOME_MESSAGE])
+    setHistoryRestored(false)
+    setRestoredMessageCount(0)
+    setRestoredFromDate(null)
   }, [])
 
   return {
     messages,
     isLoading,
+    historyRestored,
+    restoredMessageCount,
+    restoredFromDate,
+    sessionStartedAt: getSessionDate(),
     sessionId: sessionId.current,
     sendTextMessage,
     sendVoiceMessage,
