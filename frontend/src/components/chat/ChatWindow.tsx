@@ -1,8 +1,9 @@
-import { useEffect, useRef } from 'react'
-import { Trash2 } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Trash2, Star } from 'lucide-react'
 import { MessageBubble } from './MessageBubble'
 import { TypingIndicator } from './TypingIndicator'
 import { InputBar } from './InputBar'
+import { SUSModal } from './SUSModal'
 import { Button } from '@/components/ui/Button'
 import { useChat } from '@/hooks/useChat'
 import type { Message } from '@/types'
@@ -14,10 +15,13 @@ const SUGGESTED_QUESTIONS = [
   "Y a-t-il des bourses disponibles ?",
 ]
 
+const SUS_SUBMITTED_KEY = 'unibot_sus_submitted'
+
 export function ChatWindow() {
   const {
     messages,
     isLoading,
+    sessionId,
     sendTextMessage,
     sendVoiceMessage,
     handleFeedback,
@@ -25,6 +29,9 @@ export function ChatWindow() {
   } = useChat()
   const bottomRef = useRef<HTMLDivElement>(null)
   const hasOnlyWelcome = messages.length === 1
+  const hasEnoughMessages = messages.length >= 5
+  const susAlreadySubmitted = localStorage.getItem(SUS_SUBMITTED_KEY) === 'true'
+  const [susOpen, setSusOpen] = useState(false)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -40,15 +47,29 @@ export function ChatWindow() {
             UniBot est en ligne
           </span>
         </div>
-        <Button
-          variant="ghost"
-          size="xs"
-          onClick={clearMessages}
-          title="Effacer la conversation"
-        >
-          <Trash2 className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Effacer</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          {hasEnoughMessages && !susAlreadySubmitted && (
+            <Button
+              variant="outline"
+              size="xs"
+              onClick={() => setSusOpen(true)}
+              title="Évaluer UniBot"
+              className="gap-1.5"
+            >
+              <Star className="w-3.5 h-3.5 text-amber-500" />
+              <span className="hidden sm:inline">Évaluer UniBot</span>
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="xs"
+            onClick={clearMessages}
+            title="Effacer la conversation"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Effacer</span>
+          </Button>
+        </div>
       </div>
 
       {/* Messages */}
@@ -85,6 +106,24 @@ export function ChatWindow() {
           </div>
         )}
 
+        {/* Prompt SUS after 3 exchanges (if not submitted) */}
+        {hasEnoughMessages && !susAlreadySubmitted && !isLoading && (
+          <div className="animate-fade-in">
+            <div className="flex items-center gap-3 p-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30 rounded-xl">
+              <Star className="w-4 h-4 text-amber-500 flex-shrink-0" />
+              <p className="text-xs text-amber-700 dark:text-amber-400 flex-1">
+                Votre avis compte ! Aidez-nous à améliorer UniBot en répondant à 10 questions rapides.
+              </p>
+              <button
+                onClick={() => setSusOpen(true)}
+                className="text-xs font-medium text-amber-700 dark:text-amber-400 hover:underline flex-shrink-0"
+              >
+                Évaluer →
+              </button>
+            </div>
+          </div>
+        )}
+
         <div ref={bottomRef} />
       </div>
 
@@ -93,6 +132,13 @@ export function ChatWindow() {
         onSendText={sendTextMessage}
         onSendVoice={sendVoiceMessage}
         disabled={isLoading}
+      />
+
+      {/* SUS Modal */}
+      <SUSModal
+        open={susOpen}
+        onClose={() => setSusOpen(false)}
+        sessionId={sessionId}
       />
     </div>
   )

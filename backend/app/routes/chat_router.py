@@ -1,3 +1,6 @@
+import json
+import os
+import uuid
 from datetime import datetime
 from fastapi import APIRouter, HTTPException, status, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -5,7 +8,26 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.dependencies import DatabaseDep, OptionalUserDep
 from app.services.chat_service import ChatService
 from app.models.chat import ChatRequest, ChatResponse, FeedbackRequest, ConversationHistory
+from app.models.sus import SUSFeedbackRequest
 from app.models.base import BaseResponse
+
+SUS_STORE_PATH = os.path.join(os.path.dirname(__file__), "../../data/sus_responses.json")
+
+
+def _load_sus_responses() -> list[dict]:
+    try:
+        with open(SUS_STORE_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return []
+
+
+def _save_sus_response(record: dict) -> None:
+    os.makedirs(os.path.dirname(SUS_STORE_PATH), exist_ok=True)
+    records = _load_sus_responses()
+    records.append(record)
+    with open(SUS_STORE_PATH, "w", encoding="utf-8") as f:
+        json.dump(records, f, ensure_ascii=False, indent=2)
 
 router = APIRouter(prefix="/chat", tags=["Chat"])
 
@@ -64,6 +86,19 @@ async def submit_feedback(
         success=True,
         message="Feedback submitted successfully",
     )
+
+
+@router.post("/sus-feedback", response_model=BaseResponse)
+async def submit_sus_feedback(request: SUSFeedbackRequest):
+    record = {
+        "id": str(uuid.uuid4()),
+        "session_id": request.session_id,
+        "responses": request.responses,
+        "score": request.score,
+        "created_at": datetime.utcnow().isoformat(),
+    }
+    _save_sus_response(record)
+    return BaseResponse(success=True, message="SUS feedback recorded")
 
 
 @router.delete("/conversation/{session_id}", response_model=BaseResponse)

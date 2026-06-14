@@ -1,3 +1,5 @@
+import json
+import os
 from datetime import datetime, timedelta
 from fastapi import APIRouter, HTTPException, status, UploadFile, File, Form, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -7,8 +9,19 @@ from app.services.document_service import DocumentService
 from app.services.admin_service import AdminService
 from app.models.document import DocumentCreate, DocumentUpdate, DocumentResponse, DocumentListResponse
 from app.models.admin import DashboardStats, ConversationLog, FallbackQuestion
+from app.models.sus import SUSStats, SUSDistributionBucket, SUSRecentScore
 from app.models.base import BaseResponse
 from app.config.constants import DocumentCategory
+
+SUS_STORE_PATH = os.path.join(os.path.dirname(__file__), "../../data/sus_responses.json")
+
+
+def _load_sus_responses() -> list[dict]:
+    try:
+        with open(SUS_STORE_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return []
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -180,3 +193,56 @@ async def get_stats(
 ):
     doc_service = DocumentService(db)
     return await doc_service.get_stats()
+
+
+@router.get("/sus-stats", response_model=SUSStats)
+async def get_sus_stats(
+    current_user = Depends(get_current_admin),
+):
+    records = _load_sus_responses()
+
+    if not records:
+        return SUSStats(
+            count=0,
+            avg_score=0.0,
+            min_score=0.0,
+            max_score=0.0,
+            distribution=[],
+            recent_scores=[],
+        )
+
+    scores = [r["score"] for r in records]
+
+    distribution_defs = [
+        {"label": "F — Inacceptable", "range": "0–50", "min": 0, "max": 51},
+        {"label": "D — Médiocre", "range": "51–67", "min": 51, "max": 68},
+        {"label": "C — Acceptable", "range": "68–79", "min": 68, "max": 80},
+        {"label": "B — Bon", "range": "80–89", "min": 80, "max": 90},
+        {"label": "A — Excellent", "range": "90–100", "min": 90, "max": 101},
+    ]
+
+    distribution = [
+        SUSDistributionBucket(
+            label=d["label"],
+            range=d["range"],
+            min=d["min"],
+            max=d["max"],
+            count=sum(1 for s in scores if d["min"] <= s < d["max"]),
+        )
+        for d in distribution_defs
+    ]
+
+    sorted_records = sorted(records, key=lambda r: r["created_at"], reverse=True)
+    recent_scores = [
+        SUSRecentScore(score=r["score"], timestamp=r["created_at"])
+        for r in sorted_records[:10]
+    ]
+
+    return SUSStats(
+        count=len(scores),
+        avg_score=sum(scores) / len(scores),
+        min_score=min(scores),
+        max_score=max(scores),
+        distribution=distribution,
+        recent_scores=recent_scores,
+    )
