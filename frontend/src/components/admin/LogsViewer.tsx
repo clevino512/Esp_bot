@@ -8,6 +8,7 @@ import {
   Search,
   ThumbsUp,
   ThumbsDown,
+  FileDown,
 } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 import { fr } from 'date-fns/locale'
@@ -19,6 +20,7 @@ import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { PageSpinner } from '@/components/ui/Spinner'
+import { exportLogsCSV } from '@/utils/exportUtils'
 
 const STATUS_CONFIG: Record<string, { label: string; variant: BadgeVariant }> = {
   resolved: { label: 'Resolu', variant: 'success' },
@@ -154,8 +156,8 @@ export function LogsViewer() {
 
   return (
     <div className="space-y-5 animate-fade-in">
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      {/* Filters + CSV export */}
+      <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
         <Input
           placeholder="Rechercher dans les conversations..."
           value={search}
@@ -173,6 +175,18 @@ export function LogsViewer() {
           <option value="fallback">Hors domaine</option>
           <option value="unresolved">Non resolus</option>
         </select>
+        <div className="sm:ml-auto">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={filtered.length === 0}
+            onClick={() => exportLogsCSV(filtered)}
+            className="flex items-center gap-2 w-full sm:w-auto"
+          >
+            <FileDown className="w-4 h-4" />
+            Exporter CSV ({filtered.length})
+          </Button>
+        </div>
       </div>
 
       {/* Log list */}

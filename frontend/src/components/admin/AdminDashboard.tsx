@@ -13,6 +13,7 @@ import { getDashboardStats, getFallbackQuestions, getLogs } from '@/services/adm
 import { Card, StatCard } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { PageSpinner } from '@/components/ui/Spinner'
+import { ReportExportButton } from '@/components/admin/ReportExportButton'
 
 export function AdminDashboard() {
   const { data: stats, isLoading: statsLoading } = useQuery({
@@ -37,6 +38,19 @@ export function AdminDashboard() {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      {/* Header with export */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
+            Vue d'ensemble — 7 derniers jours
+          </h2>
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">
+            Métriques en temps réel de l'assistant UniBot
+          </p>
+        </div>
+        <ReportExportButton />
+      </div>
+
       {/* Quick KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
