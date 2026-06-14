@@ -15,7 +15,14 @@ const SUGGESTED_QUESTIONS = [
 ]
 
 export function ChatWindow() {
-  const { messages, isLoading, sendTextMessage, sendVoiceMessage, clearMessages } = useChat()
+  const {
+    messages,
+    isLoading,
+    sendTextMessage,
+    sendVoiceMessage,
+    handleFeedback,
+    clearMessages,
+  } = useChat()
   const bottomRef = useRef<HTMLDivElement>(null)
   const hasOnlyWelcome = messages.length === 1
 
@@ -29,7 +36,9 @@ export function ChatWindow() {
       <div className="flex items-center justify-between px-5 py-3 border-b border-neutral-200 dark:border-neutral-800">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-success-500 animate-pulse-soft" />
-          <span className="text-sm text-neutral-600 dark:text-neutral-400">UniBot est en ligne</span>
+          <span className="text-sm text-neutral-600 dark:text-neutral-400">
+            UniBot est en ligne
+          </span>
         </div>
         <Button
           variant="ghost"
@@ -48,7 +57,11 @@ export function ChatWindow() {
           msg.isStreaming ? (
             <TypingIndicator key={msg.id} />
           ) : (
-            <MessageBubble key={msg.id} message={msg} />
+            <MessageBubble
+              key={msg.id}
+              message={msg}
+              onFeedback={msg.role === 'assistant' ? handleFeedback : undefined}
+            />
           )
         )}
 

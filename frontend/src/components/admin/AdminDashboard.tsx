@@ -1,12 +1,18 @@
 import { useQuery } from '@tanstack/react-query'
-import { CircleCheck as CheckCircle, Circle as XCircle, MessageSquare, Mic, TrendingUp, TriangleAlert as AlertTriangle } from 'lucide-react'
+import {
+  CircleCheck as CheckCircle,
+  Circle as XCircle,
+  MessageSquare,
+  Mic,
+  TrendingUp,
+  TriangleAlert as AlertTriangle,
+} from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { getDashboardStats, getFallbackQuestions } from '@/services/adminService'
+import { getDashboardStats, getFallbackQuestions, getLogs } from '@/services/adminService'
 import { Card, StatCard } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { PageSpinner } from '@/components/ui/Spinner'
-import { mockLogs } from '@/data/mockData'
 
 export function AdminDashboard() {
   const { data: stats, isLoading: statsLoading } = useQuery({
@@ -19,10 +25,15 @@ export function AdminDashboard() {
     queryFn: () => getFallbackQuestions(30, 3),
   })
 
+  const { data: logsData } = useQuery({
+    queryKey: ['recent-logs'],
+    queryFn: () => getLogs({ page: 1, pageSize: 5 }),
+  })
+
   if (statsLoading) return <PageSpinner />
   if (!stats) return null
 
-  const recentLogs = mockLogs.slice(0, 5)
+  const recentLogs = logsData?.logs ?? []
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -36,20 +47,32 @@ export function AdminDashboard() {
         />
         <StatCard
           label="Taux résolu"
-          value={stats.helpfulRate !== undefined ? `${Math.round(stats.helpfulRate * 100)}%` : 'N/A'}
+          value={
+            stats.helpfulRate !== undefined
+              ? `${Math.round(stats.helpfulRate * 100)}%`
+              : 'N/A'
+          }
           icon={<CheckCircle className="w-5 h-5" />}
           change={{ value: 3, positive: true }}
           color="green"
         />
         <StatCard
           label="Confiance moy."
-          value={stats.avgConfidence !== undefined ? `${Math.round(stats.avgConfidence * 100)}%` : 'N/A'}
+          value={
+            stats.avgConfidence !== undefined
+              ? `${Math.round(stats.avgConfidence * 100)}%`
+              : 'N/A'
+          }
           icon={<TrendingUp className="w-5 h-5" />}
           color="sky"
         />
         <StatCard
           label="Taux fallback"
-          value={stats.fallbackRate !== undefined ? `${Math.round(stats.fallbackRate * 100)}%` : 'N/A'}
+          value={
+            stats.fallbackRate !== undefined
+              ? `${Math.round(stats.fallbackRate * 100)}%`
+              : 'N/A'
+          }
           icon={<AlertTriangle className="w-5 h-5" />}
           color="amber"
         />
@@ -62,42 +85,56 @@ export function AdminDashboard() {
             Conversations récentes
           </h3>
           <div className="space-y-3">
-            {recentLogs.map(log => (
-              <div
-                key={log.id}
-                className="flex items-start gap-3 p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl"
-              >
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${
-                  log.status === 'resolved'
-                    ? 'bg-success-100 dark:bg-success-900/20'
-                    : 'bg-warning-100 dark:bg-warning-900/20'
-                }`}>
-                  {log.status === 'resolved'
-                    ? <CheckCircle className="w-3.5 h-3.5 text-success-600" />
-                    : <XCircle className="w-3.5 h-3.5 text-warning-600" />
-                  }
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-neutral-800 dark:text-neutral-200 truncate">
-                    {log.userQuestion}
-                  </p>
-                  <div className="flex items-center gap-3 mt-0.5">
-                    <span className="text-xs text-neutral-400">
-                      {format(parseISO(log.timestamp), "HH:mm", { locale: fr })}
-                    </span>
-                    {log.mode === 'voice' && (
-                      <span className="flex items-center gap-0.5 text-xs text-primary-500">
-                        <Mic className="w-3 h-3" />
-                        Vocal
-                      </span>
-                    )}
-                    <span className="text-xs text-neutral-400">
-                      {Math.round(log.confidence * 100)}% confiance
-                    </span>
+            {recentLogs.length === 0 ? (
+              <p className="text-sm text-neutral-400 dark:text-neutral-500 text-center py-6">
+                Aucune conversation pour l'instant.
+              </p>
+            ) : (
+              recentLogs.map(log => {
+                const query = log.query || log.userQuestion || ''
+                const isFallback = log.isFallback || log.status === 'fallback'
+
+                return (
+                  <div
+                    key={log.id}
+                    className="flex items-start gap-3 p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl"
+                  >
+                    <div
+                      className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${
+                        !isFallback
+                          ? 'bg-success-100 dark:bg-success-900/20'
+                          : 'bg-warning-100 dark:bg-warning-900/20'
+                      }`}
+                    >
+                      {!isFallback ? (
+                        <CheckCircle className="w-3.5 h-3.5 text-success-600" />
+                      ) : (
+                        <XCircle className="w-3.5 h-3.5 text-warning-600" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-neutral-800 dark:text-neutral-200 truncate">
+                        {query}
+                      </p>
+                      <div className="flex items-center gap-3 mt-0.5">
+                        <span className="text-xs text-neutral-400">
+                          {format(parseISO(log.timestamp), 'HH:mm', { locale: fr })}
+                        </span>
+                        {log.mode === 'voice' && (
+                          <span className="flex items-center gap-0.5 text-xs text-primary-500">
+                            <Mic className="w-3 h-3" />
+                            Vocal
+                          </span>
+                        )}
+                        <span className="text-xs text-neutral-400">
+                          {Math.round(log.confidence * 100)}% confiance
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            ))}
+                )
+              })
+            )}
           </div>
         </Card>
 
@@ -110,22 +147,29 @@ export function AdminDashboard() {
             </h3>
           </div>
           <div className="space-y-3">
-            {fallbackQuestions?.map((q, i) => (
-              <div key={i} className="p-3 bg-warning-50 dark:bg-warning-900/10 border border-warning-200 dark:border-warning-800/30 rounded-xl">
-                <p className="text-sm text-neutral-800 dark:text-neutral-200 mb-1.5">
-                  {q.question}
-                </p>
-                <div className="flex items-center gap-2">
-                  <Badge variant="warning">{q.count}x</Badge>
-                  <span className="text-xs text-neutral-400">
-                    Hors domaine
-                  </span>
+            {!fallbackQuestions || fallbackQuestions.length === 0 ? (
+              <p className="text-sm text-neutral-400 dark:text-neutral-500 text-center py-4">
+                Aucune question hors domaine détectée.
+              </p>
+            ) : (
+              fallbackQuestions.map((q, i) => (
+                <div
+                  key={i}
+                  className="p-3 bg-warning-50 dark:bg-warning-900/10 border border-warning-200 dark:border-warning-800/30 rounded-xl"
+                >
+                  <p className="text-sm text-neutral-800 dark:text-neutral-200 mb-1.5">
+                    {q.question}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="warning">{q.count}x</Badge>
+                    <span className="text-xs text-neutral-400">Hors domaine</span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
           <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-4 text-center">
-            Ces questions nécessitent des documents supplémentaires dans la base de connaissances.
+            Ces questions nécessitent des documents supplémentaires.
           </p>
         </Card>
       </div>

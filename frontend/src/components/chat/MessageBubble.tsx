@@ -1,5 +1,14 @@
 import { useState } from 'react'
-import { GraduationCap, User, Mic, ChevronDown, ChevronUp, ExternalLink, ThumbsUp, ThumbsDown } from 'lucide-react'
+import {
+  GraduationCap,
+  User,
+  Mic,
+  ChevronDown,
+  ChevronUp,
+  ExternalLink,
+  ThumbsUp,
+  ThumbsDown,
+} from 'lucide-react'
 import { clsx } from 'clsx'
 import ReactMarkdown from 'react-markdown'
 import { format } from 'date-fns'
@@ -9,33 +18,51 @@ import { Badge } from '@/components/ui/Badge'
 
 interface MessageBubbleProps {
   message: Message
+  onFeedback?: (messageId: string, feedback: 'helpful' | 'not_helpful') => void
 }
 
-export function MessageBubble({ message }: MessageBubbleProps) {
+export function MessageBubble({ message, onFeedback }: MessageBubbleProps) {
   const [sourcesOpen, setSourcesOpen] = useState(false)
-  const [feedback, setFeedback] = useState<'positive' | 'negative' | null>(message.feedback === 'helpful' ? 'positive' : message.feedback === 'not_helpful' ? 'negative' : null)
+  const [localFeedback, setLocalFeedback] = useState<'helpful' | 'not_helpful' | null>(
+    message.feedback === 'helpful'
+      ? 'helpful'
+      : message.feedback === 'not_helpful'
+      ? 'not_helpful'
+      : null
+  )
 
   const isUser = message.role === 'user'
   const isAssistant = message.role === 'assistant'
   const hasSources = (message.sources?.length ?? 0) > 0
   const isFallback = (message.confidence ?? 1) < 0.5
 
+  function handleFeedbackClick(fb: 'helpful' | 'not_helpful') {
+    if (localFeedback === fb) return
+    setLocalFeedback(fb)
+    onFeedback?.(message.id, fb)
+  }
+
   return (
-    <div className={clsx(
-      'flex items-end gap-3 animate-slide-up',
-      isUser && 'flex-row-reverse'
-    )}>
+    <div
+      className={clsx(
+        'flex items-end gap-3 animate-slide-up',
+        isUser && 'flex-row-reverse'
+      )}
+    >
       {/* Avatar */}
-      <div className={clsx(
-        'w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0',
-        isUser
-          ? 'bg-neutral-200 dark:bg-neutral-700'
-          : 'bg-primary-600'
-      )}>
-        {isUser
-          ? <User className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
-          : <GraduationCap className="w-4 h-4 text-white" />
-        }
+      <div
+        className={clsx(
+          'w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0',
+          isUser
+            ? 'bg-neutral-200 dark:bg-neutral-700'
+            : 'bg-primary-600'
+        )}
+      >
+        {isUser ? (
+          <User className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
+        ) : (
+          <GraduationCap className="w-4 h-4 text-white" />
+        )}
       </div>
 
       {/* Bubble */}
@@ -49,30 +76,35 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         )}
 
         {/* Content */}
-        <div className={clsx(
-          'rounded-2xl px-4 py-3 shadow-card',
-          isUser
-            ? 'bg-primary-600 text-white rounded-br-sm'
-            : clsx(
-                'bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-bl-sm',
-                isFallback && 'border-warning-300 dark:border-warning-700/50 bg-warning-50/50 dark:bg-warning-900/10'
-              )
-        )}>
+        <div
+          className={clsx(
+            'rounded-2xl px-4 py-3 shadow-card',
+            isUser
+              ? 'bg-primary-600 text-white rounded-br-sm'
+              : clsx(
+                  'bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-bl-sm',
+                  isFallback &&
+                    'border-warning-300 dark:border-warning-700/50 bg-warning-50/50 dark:bg-warning-900/10'
+                )
+          )}
+        >
           {isUser ? (
             <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
           ) : (
-            <div className={clsx(
-              'prose prose-sm max-w-none',
-              'prose-headings:font-semibold prose-headings:text-neutral-900 dark:prose-headings:text-white',
-              'prose-p:text-neutral-700 dark:prose-p:text-neutral-300 prose-p:leading-relaxed',
-              'prose-strong:text-neutral-900 dark:prose-strong:text-white prose-strong:font-semibold',
-              'prose-ul:text-neutral-700 dark:prose-ul:text-neutral-300',
-              'prose-ol:text-neutral-700 dark:prose-ol:text-neutral-300',
-              'prose-li:leading-relaxed',
-              'prose-table:text-sm prose-td:text-neutral-700 dark:prose-td:text-neutral-300',
-              'prose-th:text-neutral-800 dark:prose-th:text-neutral-200',
-              '[&>:first-child]:mt-0 [&>:last-child]:mb-0'
-            )}>
+            <div
+              className={clsx(
+                'prose prose-sm max-w-none',
+                'prose-headings:font-semibold prose-headings:text-neutral-900 dark:prose-headings:text-white',
+                'prose-p:text-neutral-700 dark:prose-p:text-neutral-300 prose-p:leading-relaxed',
+                'prose-strong:text-neutral-900 dark:prose-strong:text-white prose-strong:font-semibold',
+                'prose-ul:text-neutral-700 dark:prose-ul:text-neutral-300',
+                'prose-ol:text-neutral-700 dark:prose-ol:text-neutral-300',
+                'prose-li:leading-relaxed',
+                'prose-table:text-sm prose-td:text-neutral-700 dark:prose-td:text-neutral-300',
+                'prose-th:text-neutral-800 dark:prose-th:text-neutral-200',
+                '[&>:first-child]:mt-0 [&>:last-child]:mb-0'
+              )}
+            >
               <ReactMarkdown>{message.content}</ReactMarkdown>
             </div>
           )}
@@ -82,7 +114,9 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         {isAssistant && isFallback && (
           <div className="flex items-center gap-1.5 px-1">
             <Badge variant="warning">Hors domaine</Badge>
-            <span className="text-xs text-neutral-400">Contactez la scolarité pour plus d'infos</span>
+            <span className="text-xs text-neutral-400">
+              Contactez la scolarité pour plus d'infos
+            </span>
           </div>
         )}
 
@@ -94,8 +128,16 @@ export function MessageBubble({ message }: MessageBubbleProps) {
               className="flex items-center gap-1.5 text-xs text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
             >
               <ExternalLink className="w-3 h-3" />
-              <span>{message.sources!.length} source{message.sources!.length > 1 ? 's' : ''} citée{message.sources!.length > 1 ? 's' : ''}</span>
-              {sourcesOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+              <span>
+                {message.sources!.length} source
+                {message.sources!.length > 1 ? 's' : ''} citée
+                {message.sources!.length > 1 ? 's' : ''}
+              </span>
+              {sourcesOpen ? (
+                <ChevronUp className="w-3 h-3" />
+              ) : (
+                <ChevronDown className="w-3 h-3" />
+              )}
             </button>
 
             {sourcesOpen && (
@@ -129,18 +171,24 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         )}
 
         {/* Timestamp + Feedback */}
-        <div className={clsx('flex items-center gap-2 px-1', isUser && 'flex-row-reverse')}>
+        <div
+          className={clsx(
+            'flex items-center gap-2 px-1',
+            isUser && 'flex-row-reverse'
+          )}
+        >
           <span className="text-[11px] text-neutral-400 dark:text-neutral-500">
             {format(message.timestamp, 'HH:mm', { locale: fr })}
           </span>
 
-          {isAssistant && !isFallback && (
+          {isAssistant && !isFallback && onFeedback && (
             <div className="flex items-center gap-1">
               <button
-                onClick={() => setFeedback('positive')}
+                onClick={() => handleFeedbackClick('helpful')}
+                title="Réponse utile"
                 className={clsx(
                   'p-0.5 rounded transition-colors',
-                  feedback === 'positive'
+                  localFeedback === 'helpful'
                     ? 'text-success-500'
                     : 'text-neutral-300 dark:text-neutral-600 hover:text-success-500'
                 )}
@@ -148,10 +196,11 @@ export function MessageBubble({ message }: MessageBubbleProps) {
                 <ThumbsUp className="w-3 h-3" />
               </button>
               <button
-                onClick={() => setFeedback('negative')}
+                onClick={() => handleFeedbackClick('not_helpful')}
+                title="Réponse non utile"
                 className={clsx(
                   'p-0.5 rounded transition-colors',
-                  feedback === 'negative'
+                  localFeedback === 'not_helpful'
                     ? 'text-error-500'
                     : 'text-neutral-300 dark:text-neutral-600 hover:text-error-500'
                 )}
