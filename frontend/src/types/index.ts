@@ -10,6 +10,7 @@ export interface Source {
   relevanceScore: number
   content?: string
   excerpt?: string
+  isPublic?: boolean
 }
 
 export type MessageRole = 'user' | 'assistant' | 'system'
