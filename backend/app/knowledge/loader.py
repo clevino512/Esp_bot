@@ -1,12 +1,16 @@
 from typing import Any
 import logging
 import os
+import csv
 from pathlib import Path
 
 import pdfplumber
 from docx import Document
 from bs4 import BeautifulSoup
 import markdown
+from pptx import Presentation
+import openpyxl
+import xlrd
 
 from app.config.constants import ALLOWED_DOCUMENT_EXTENSIONS
 
@@ -46,6 +50,16 @@ class DocumentLoader:
             return self._extract_markdown(file_path)
         elif ext == ".html":
             return self._extract_html(file_path)
+        elif ext == ".xlsx":
+            return self._extract_xlsx(file_path)
+        elif ext == ".xls":
+            return self._extract_xls(file_path)
+        elif ext == ".pptx":
+            return self._extract_pptx(file_path)
+        elif ext == ".ppt":
+            return self._extract_pptx(file_path)
+        elif ext == ".csv":
+            return self._extract_csv(file_path)
         return ""
 
     def _extract_pdf(self, file_path: str) -> str:
@@ -78,6 +92,58 @@ class DocumentLoader:
             html_content = f.read()
         soup = BeautifulSoup(html_content, "html.parser")
         return soup.get_text(separator="\n")
+
+    def _extract_xlsx(self, file_path: str) -> str:
+        """Extract text from Excel .xlsx files."""
+        parts = []
+        wb = openpyxl.load_workbook(file_path, read_only=True, data_only=True)
+        for sheet_name in wb.sheetnames:
+            sheet = wb[sheet_name]
+            sheet_parts = [f"[Feuille: {sheet_name}]"]
+            for row in sheet.iter_rows(values_only=True):
+                row_text = " | ".join(str(cell) if cell is not None else "" for cell in row)
+                if row_text.strip():
+                    sheet_parts.append(row_text)
+            parts.append("\n".join(sheet_parts))
+        wb.close()
+        return "\n\n".join(parts)
+
+    def _extract_xls(self, file_path: str) -> str:
+        """Extract text from legacy Excel .xls files."""
+        parts = []
+        wb = xlrd.open_workbook(file_path)
+        for sheet_idx in range(wb.nsheets):
+            sheet = wb.sheet_by_index(sheet_idx)
+            sheet_parts = [f"[Feuille: {sheet.name}]"]
+            for row_idx in range(sheet.nrows):
+                row_text = " | ".join(str(sheet.cell_value(row_idx, col_idx)) for col_idx in range(sheet.ncols))
+                if row_text.strip():
+                    sheet_parts.append(row_text)
+            parts.append("\n".join(sheet_parts))
+        return "\n\n".join(parts)
+
+    def _extract_pptx(self, file_path: str) -> str:
+        """Extract text from PowerPoint .pptx files."""
+        parts = []
+        prs = Presentation(file_path)
+        for slide_idx, slide in enumerate(prs.slides, start=1):
+            slide_parts = [f"[Diapositive {slide_idx}]"]
+            for shape in slide.shapes:
+                if hasattr(shape, "text") and shape.text.strip():
+                    slide_parts.append(shape.text)
+            parts.append("\n".join(slide_parts))
+        return "\n\n".join(parts)
+
+    def _extract_csv(self, file_path: str) -> str:
+        """Extract text from CSV files."""
+        parts = []
+        with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+            reader = csv.reader(f)
+            for row in reader:
+                row_text = " | ".join(cell for cell in row)
+                if row_text.strip():
+                    parts.append(row_text)
+        return "\n".join(parts)
 
     def _extract_metadata(self, file_path: str, ext: str) -> dict[str, Any]:
         path = Path(file_path)

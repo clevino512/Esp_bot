@@ -325,7 +325,7 @@ export function exportReportPDF(data: ReportData) {
         4: { cellWidth: 15, halign: 'center' },
         5: { cellWidth: 18, halign: 'center' },
       },
-      didParseCell: (hookData) => {
+      didParseCell: (hookData: { column: { index: number }; section: string; cell: { raw: string | number; styles: { textColor: number[] } } }) => {
         if (hookData.column.index === 2 && hookData.section === 'body') {
           const val = hookData.cell.raw as string
           if (val === 'Hors domaine' || val === 'Sans réponse') {

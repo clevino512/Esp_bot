@@ -29,7 +29,8 @@ AUDIO_SAMPLE_RATE: Final[int] = 16000
 
 MAX_FILE_SIZE_BYTES: Final[int] = 50 * 1024 * 1024  # 50 MB
 ALLOWED_DOCUMENT_EXTENSIONS: Final[set[str]] = {
-    ".pdf", ".docx", ".txt", ".md", ".html"
+    ".pdf", ".docx", ".txt", ".md", ".html",
+    ".xlsx", ".xls", ".pptx", ".ppt", ".csv",
 }
 
 # ── JWT ────────────────────────────────────────────────────────────────────────

@@ -274,7 +274,7 @@ export function DocumentManager() {
             <input
               ref={fileInputRef}
               type="file"
-              accept=".pdf,.docx,.doc,.txt,.md"
+              accept=".pdf,.docx,.doc,.txt,.md,.html,.xlsx,.xls,.pptx,.ppt,.csv"
               className="hidden"
               onChange={e => setUploadFile(e.target.files?.[0] ?? null)}
             />
@@ -292,7 +292,7 @@ export function DocumentManager() {
                 <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                   Glissez-déposez ou cliquez pour choisir
                 </p>
-                <p className="text-xs text-neutral-400 mt-1">PDF, DOCX, TXT, Markdown — max 10 MB</p>
+                <p className="text-xs text-neutral-400 mt-1">PDF, DOCX, XLSX, PPTX, CSV, TXT, HTML, Markdown — max 50 MB</p>
               </div>
             )}
           </div>
