@@ -9,6 +9,7 @@ from app.config import get_settings
 from app.core.retriever import Retriever
 from app.core.llm_client import LLMClient
 from app.core.fallback import FallbackHandler
+from app.config.constants import FeedbackType, MAX_MESSAGE_LENGTH  
 from app.core.prompts import PromptTemplates
 from app.repositories.conversation_repository import ConversationRepository
 from app.models.chat import Source, ChatResponse, Message
@@ -45,13 +46,23 @@ class ChatService:
         )
 
         sources = await self.retriever.aretrieve(user_message)
+        
+        # ✅ LOG DÉTAILLÉ pour déboguer l'indexation
+        logger.info(f"Retrieved {len(sources)} sources for query: {user_message}")
+        for i, source in enumerate(sources):
+            logger.debug(f"  Source {i+1}: title={source.get('metadata', {}).get('title')}, "
+                        f"relevance={source.get('relevance_score'):.3f}")
+        
         is_fallback = self.fallback.should_fallback(sources)
 
         if is_fallback:
-            context = sources[:2] if sources else None
+            # ✅ AMÉLIORÉ: Même avec pertinence partielle, utiliser le contexte disponible
+            logger.warning(f"Fallback mode activated. Using {len(sources)} partial sources.")
+            context = sources[:3] if sources else None
+            context_text = self.fallback._format_partial_context(context or []) if context else ""
             response_text, response_time = await self.llm.generate_with_timing(
                 system_prompt=PromptTemplates.SYSTEM_PROMPT,
-                user_prompt=self.fallback._format_partial_context(context or []) + f"\n\nQuestion: {user_message}",
+                user_prompt=f"{context_text}\n\nQuestion: {user_message}" if context_text else f"Question: {user_message}",
             )
         else:
             context_str = "\n\n".join(s.get("content", "") for s in sources[:3])
@@ -124,16 +135,16 @@ class ChatService:
         ]
 
     async def submit_feedback(
-        self,
-        message_id: str,
-        feedback_type: str,
-    ) -> bool:
+            self, 
+            message_id: str, 
+            feedback_type: str
+            ) -> bool:
         try:
-            feedback_enum = getattr(__import__("app.config.constants", fromlist=["FeedbackType"]).FeedbackType, feedback_type.upper())
+            feedback_enum = FeedbackType(feedback_type.upper())
             result = await self.conversation_repo.set_feedback(int(message_id), feedback_enum)
             return result is not None
-        except Exception as e:
-            logger.error(f"Failed to submit feedback: {e}")
+        except (ValueError, KeyError) as e:
+            logger.error(f"Invalid feedback type '{feedback_type}': {e}")
             return False
 
     async def clear_conversation(self, session_id: str) -> bool:

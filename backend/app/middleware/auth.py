@@ -1,14 +1,14 @@
-from typing import Any
+# app/middleware/auth.py
+
 import logging
-from fastapi import Request, HTTPException, status
+from fastapi import Request, status
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 
+from app.db.session import get_db
 from app.services.auth_service import AuthService
-from app.config import get_settings
 
 logger = logging.getLogger(__name__)
-settings = get_settings()
 
 PUBLIC_PATHS = [
     "/api/v1/auth/login",
@@ -22,6 +22,11 @@ PUBLIC_PATHS = [
 
 class AuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
+        
+        logger.info(f"PATH REÇU  : '{request.url.path}'")
+        logger.info(f"IS PUBLIC  : {self._is_public_path(request.url.path)}")
+
+
         if self._is_public_path(request.url.path):
             return await call_next(request)
 
@@ -38,17 +43,22 @@ class AuthMiddleware(BaseHTTPMiddleware):
                 content={"detail": "Invalid authorization header format"},
             )
 
-        token = auth_header.replace("Bearer ", "")
+        token = auth_header.replace("Bearer ", "").strip()
 
         try:
-            from app.dependencies import get_current_user_optional
-            user = await get_current_user_optional(token)
+            # ✅ Appel direct AuthService sans passer par Depends
+            async for db in get_db():
+                auth_service = AuthService(db)
+                user = await auth_service.get_current_user(token)
+                break
+
             if not user:
                 return JSONResponse(
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     content={"detail": "Invalid or expired token"},
                 )
             request.state.user = user
+
         except Exception as e:
             logger.error(f"Auth middleware error: {e}")
             return JSONResponse(
@@ -56,8 +66,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
                 content={"detail": "Authentication failed"},
             )
 
-        response = await call_next(request)
-        return response
+        return await call_next(request)
 
     def _is_public_path(self, path: str) -> bool:
         for public_path in PUBLIC_PATHS:
@@ -66,21 +75,4 @@ class AuthMiddleware(BaseHTTPMiddleware):
         return path == "/" or path.startswith("/static")
 
 
-async def get_current_user(request: Request):
-    user = getattr(request.state, "user", None)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
-        )
-    return user
-
-
-async def get_current_admin(request: Request):
-    user = await get_current_user(request)
-    if user.role != "admin":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Admin access required",
-        )
-    return user
+    

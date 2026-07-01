@@ -65,10 +65,11 @@ class DocumentService:
         if ext not in ALLOWED_DOCUMENT_EXTENSIONS:
             raise ValueError(f"Unsupported file type: {ext}")
 
-        upload_dir = Path(settings.HUGGINGFACE_CACHE_DIR).parent / "documents"
+        # ✅ CORRIGÉ: Utiliser le chemin de stockage correct
+        upload_dir = Path(settings.STORAGE_DIR) / "documents"
         upload_dir.mkdir(parents=True, exist_ok=True)
 
-        file_path = upload_dir / f"{filename}"
+        file_path = upload_dir / filename
         with open(file_path, "wb") as f:
             f.write(file_data)
 

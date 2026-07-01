@@ -35,6 +35,7 @@ export function LoginPage() {
     }
   }
 
+
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex flex-col">
       {/* Top bar */}
@@ -105,12 +106,6 @@ export function LoginPage() {
               </Button>
             </form>
 
-            {/* Demo credentials */}
-            <div className="mt-4 p-3 bg-primary-50 dark:bg-primary-900/20 rounded-xl">
-              <p className="text-xs text-primary-700 dark:text-primary-400 font-medium mb-1">Identifiants de démo :</p>
-              <p className="text-xs text-primary-600 dark:text-primary-300 font-mono">admin@espa.mg</p>
-              <p className="text-xs text-primary-600 dark:text-primary-300 font-mono">admin123</p>
-            </div>
           </div>
 
           <p className="text-center mt-4 text-sm text-neutral-500 dark:text-neutral-400">

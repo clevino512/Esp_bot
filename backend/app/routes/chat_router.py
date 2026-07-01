@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import uuid
 from datetime import datetime
@@ -12,6 +13,7 @@ from app.models.sus import SUSFeedbackRequest
 from app.models.base import BaseResponse
 
 SUS_STORE_PATH = os.path.join(os.path.dirname(__file__), "../../data/sus_responses.json")
+logger = logging.getLogger(__name__)
 
 
 def _load_sus_responses() -> list[dict]:
@@ -38,13 +40,20 @@ async def send_message(
     db: DatabaseDep,
     current_user: OptionalUserDep = None,
 ):
-    chat_service = ChatService(db)
-    response = await chat_service.process_message(
-        user_message=request.message,
-        session_id=request.session_id,
-        history=request.history,
-    )
-    return response
+    try:
+        chat_service = ChatService(db)
+        response = await chat_service.process_message(
+            user_message=request.message,
+            session_id=request.session_id,
+            history=request.history,
+        )
+        return response
+    except Exception as exc:
+        logger.exception("Chat message processing failed")
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=str(exc),
+        ) from exc
 
 
 @router.get("/history/{session_id}", response_model=ConversationHistory)

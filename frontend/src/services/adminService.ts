@@ -23,27 +23,27 @@ export async function login(
   email: string,
   password: string
 ): Promise<{ user: AdminUser; tokens: AuthTokens }> {
-  const response = await api.post<LoginResponse>('/auth/login', {
-    email,
-    password,
-  })
 
-  const data = response.data
+  // ── Étape 1 : Login ────────────────────────────────────────
+  const { data } = await api.post<LoginResponse>('/auth/login', { email, password })
 
   const tokens: AuthTokens = {
-    accessToken: data.access_token,
+    accessToken:  data.access_token,
     refreshToken: data.refresh_token,
-    expiresIn: data.expires_in,
+    expiresIn:    data.expires_in,
   }
 
-  const userResponse = await api.get<UserResponse>('/auth/me')
-  const userData = userResponse.data
+  // ── Étape 2 : /auth/me avec token explicite ────────────────
+  const { data: userData } = await api.get<UserResponse>('/auth/me', {
+    headers: { Authorization: `Bearer ${tokens.accessToken}` }
+  })
 
+  // ── Étape 3 : Mapping du profil ────────────────────────────
   const user: AdminUser = {
-    id: userData.id.toString(),
-    email: userData.email,
-    name: userData.full_name,
-    role: userData.role,
+    id:        userData.id.toString(),
+    email:     userData.email,
+    name:      userData.full_name,
+    role:      userData.role,
     createdAt: userData.created_at,
   }
 

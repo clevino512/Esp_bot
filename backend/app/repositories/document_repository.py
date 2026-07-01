@@ -95,14 +95,14 @@ class DocumentRepository:
         chunk_index: int,
         content: str,
         embedding_id: str | None = None,
-        metadata: str | None = None,
+        chunk_metadata: str | None = None,
     ) -> DocumentChunk:
         chunk = DocumentChunk(
             document_id=document_id,
             chunk_index=chunk_index,
             content=content,
             embedding_id=embedding_id,
-            metadata=metadata,
+            chunk_metadata=metadata,
         )
         self.db.add(chunk)
         await self.db.flush()

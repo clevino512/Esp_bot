@@ -1,11 +1,13 @@
 from functools import lru_cache
+from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Literal
 
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=str(BASE_DIR / ".env"),
         env_file_encoding="utf-8",
         case_sensitive=False,
         extra="ignore",
@@ -17,14 +19,23 @@ class Settings(BaseSettings):
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = True
 
-    # ── LLM ──────────────────────────────────────────────────
+    # # ── LLM pour docker ──────────────────────────────────────────────────
+    # LLM_PROVIDER: Literal["openai", "ollama"] = "openai"
+    # OPENAI_API_KEY: str = ""
+    # OPENAI_MODEL: str = "gpt-4o-mini"
+    # OPENAI_MAX_TOKENS: int = 1000
+    # OPENAI_TEMPERATURE: float = 0.2
+    # OLLAMA_BASE_URL: str = "http://ollama:11434"
+    # OLLAMA_MODEL: str = "mistral:7b"
+
+
+    # ── LLM en developpement ──────────────────────────────────────────────────
     LLM_PROVIDER: Literal["openai", "ollama"] = "openai"
     OPENAI_API_KEY: str = ""
+    OPENAI_BASE_URL: str = "https://api.openai.com/v1"
     OPENAI_MODEL: str = "gpt-4o-mini"
     OPENAI_MAX_TOKENS: int = 1000
     OPENAI_TEMPERATURE: float = 0.2
-    OLLAMA_BASE_URL: str = "http://ollama:11434"
-    OLLAMA_MODEL: str = "mistral:7b"
 
     # ── ChromaDB ─────────────────────────────────────────────
     CHROMA_HOST: str = "chromadb"
@@ -37,12 +48,15 @@ class Settings(BaseSettings):
     EMBEDDING_DEVICE: str = "cpu"
     HUGGINGFACE_CACHE_DIR: str = "/app/.cache/huggingface"
 
+    # ── Storage ──────────────────────────────────────────────
+    STORAGE_DIR: str = "/app/storage"
+
     # ── RAG ──────────────────────────────────────────────────
     CHUNK_SIZE: int = 500
     CHUNK_OVERLAP: int = 50
-    TOP_K_RETRIEVAL: int = 5
-    MIN_RELEVANCE_SCORE: float = 0.65
-    FALLBACK_THRESHOLD: float = 0.40
+    TOP_K_RETRIEVAL: int = 8
+    MIN_RELEVANCE_SCORE: float = 0.45
+    FALLBACK_THRESHOLD: float = 0.35
 
     # ── PostgreSQL ───────────────────────────────────────────
     POSTGRES_HOST: str = "postgres"

@@ -1,3 +1,5 @@
+# app/dependencies.py
+
 from typing import Annotated
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -20,8 +22,9 @@ DatabaseDep = Annotated[AsyncSession, Depends(get_db_session)]
 
 async def get_current_user_optional(
     credentials: HTTPAuthorizationCredentials | None = Depends(security),
-    db: DatabaseDep = None,
+    db: AsyncSession = Depends(get_db_session),
 ):
+    """Retourne l'utilisateur courant ou None si non authentifié."""
     if not credentials:
         return None
     token = credentials.credentials
@@ -30,9 +33,10 @@ async def get_current_user_optional(
 
 
 async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
-    db: DatabaseDep = None,
+    credentials: HTTPAuthorizationCredentials | None = Depends(security),
+    db: AsyncSession = Depends(get_db_session),
 ):
+    """Retourne l'utilisateur courant ou lève 401."""
     if not credentials:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -52,9 +56,11 @@ async def get_current_user(
 
 
 async def get_current_admin(
-    user = Depends(get_current_user),
+    user=Depends(get_current_user),
 ):
-    if user.role != UserRole.ADMIN:
+    """Vérifie que l'utilisateur courant est admin."""
+    # ✅ Comparaison str vs str — user.role est 'admin' (str depuis DB)
+    if user.role != UserRole.ADMIN.value:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin access required",
@@ -62,6 +68,6 @@ async def get_current_admin(
     return user
 
 
-CurrentUserDep = Annotated[dict, Depends(get_current_user)]
+CurrentUserDep  = Annotated[dict, Depends(get_current_user)]
 CurrentAdminDep = Annotated[dict, Depends(get_current_admin)]
 OptionalUserDep = Annotated[dict | None, Depends(get_current_user_optional)]

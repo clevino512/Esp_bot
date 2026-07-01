@@ -21,6 +21,7 @@ class LLMClient:
             if self.provider == "openai":
                 self._client = AsyncOpenAI(
                     api_key=settings.OPENAI_API_KEY,
+                    base_url=settings.OPENAI_BASE_URL,
                     max_retries=2,
                     timeout=60.0,
                 )

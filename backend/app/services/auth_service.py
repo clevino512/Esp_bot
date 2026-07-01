@@ -1,8 +1,6 @@
-import uuid
+import bcrypt
 from datetime import datetime, timedelta
-from typing import Any
 
-from passlib.context import CryptContext
 from jose import JWTError, jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,7 +10,6 @@ from app.repositories.user_repository import UserRepository
 from app.models.user import UserCreate, UserResponse, Token, TokenPayload
 
 settings = get_settings()
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 class AuthService:
@@ -21,10 +18,14 @@ class AuthService:
         self.user_repo = UserRepository(db)
 
     def verify_password(self, plain_password: str, hashed_password: str) -> bool:
-        return pwd_context.verify(plain_password, hashed_password)
+        return bcrypt.checkpw(
+            plain_password.encode("utf-8"),
+            hashed_password.encode("utf-8"),
+        )
 
     def hash_password(self, password: str) -> str:
-        return pwd_context.hash(password)
+        salt = bcrypt.gensalt(rounds=12)
+        return bcrypt.hashpw(password.encode("utf-8"), salt).decode("utf-8")
 
     def create_access_token(self, user_id: int, email: str, role: str) -> str:
         now = datetime.utcnow()
@@ -53,13 +54,16 @@ class AuthService:
 
     def decode_token(self, token: str) -> TokenPayload | None:
         try:
-            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+            payload = jwt.decode(
+                token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+            )
             return TokenPayload(
                 sub=payload["sub"],
                 email=payload["email"],
                 role=payload.get("role", "user"),
                 exp=datetime.fromtimestamp(payload["exp"]),
                 iat=datetime.fromtimestamp(payload["iat"]),
+                type=payload.get("type", "access"),
             )
         except JWTError:
             return None
@@ -76,7 +80,6 @@ class AuthService:
             full_name=user_data.full_name,
             role=user_data.role,
         )
-
         return UserResponse.model_validate(user)
 
     async def login(self, email: str, password: str) -> Token:
@@ -90,7 +93,7 @@ class AuthService:
         if not user.is_active:
             raise ValueError("Account is deactivated")
 
-        access_token = self.create_access_token(user.id, user.email, user.role.value)
+        access_token = self.create_access_token(user.id, user.email, user.role)
         refresh_token = self.create_refresh_token(user.id, user.email)
 
         return Token(
@@ -101,10 +104,7 @@ class AuthService:
 
     async def get_current_user(self, token: str) -> UserResponse | None:
         payload = self.decode_token(token)
-        if not payload:
-            return None
-
-        if payload.type == "refresh":
+        if not payload or payload.type == "refresh":
             return None
 
         user = await self.user_repo.get_by_id(int(payload.sub))
@@ -122,7 +122,7 @@ class AuthService:
         if not user or not user.is_active:
             return None
 
-        access_token = self.create_access_token(user.id, user.email, user.role.value)
+        access_token = self.create_access_token(user.id, user.email, user.role)
         new_refresh_token = self.create_refresh_token(user.id, user.email)
 
         return Token(
@@ -131,7 +131,9 @@ class AuthService:
             expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         )
 
-    async def create_admin_user(self, email: str, password: str, full_name: str) -> UserResponse:
+    async def create_admin_user(
+        self, email: str, password: str, full_name: str
+    ) -> UserResponse:
         return await self.register(UserCreate(
             email=email,
             password=password,

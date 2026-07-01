@@ -354,8 +354,7 @@ cd unibot-espa
 
 # 2. Configurer les variables d'environnement
 cp .env.example .env
-# Éditer .env avec vos clés API (voir section Configuration)
-nano .env
+
 
 # 3. Construire et démarrer tous les services
 docker compose up --build
@@ -385,7 +384,7 @@ cd backend
 # Créer et activer l'environnement virtuel
 python -m venv .venv
 source .venv/bin/activate  # Linux/macOS
-# .venv\Scripts\activate   # Windows
+# .\.venv\Scripts\Activate.ps1  # Windows
 
 # Installer les dépendances
 pip install --upgrade pip
@@ -393,6 +392,10 @@ pip install -r requirements.txt
 
 # Démarrer les services tiers (ChromaDB, PostgreSQL, Redis) via Docker
 docker compose up chromadb postgres redis -d
+
+#demarrer chroma manuellement 
+chroma run --path ./chroma_data --host 127.0.0.1 --port 8000
+
 
 # Lancer le serveur de développement
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
@@ -620,12 +623,3 @@ git push origin feature/nom-de-la-fonctionnalite
 ```
 
 ---
-
-## 📄 Licence
-
-Ce projet est sous licence **MIT** — voir le fichier [LICENSE](LICENSE) pour les détails.
-
----
-
-*Développé avec ❤️ pour l'ESPA Antsiranana — Madagascar 🇲🇬*  
-*Université d'Antsiranana | Mention STIC | Année Universitaire 2025-2026*

@@ -22,12 +22,14 @@ class FallbackHandler:
             return True
 
         max_relevance = max(s.get("relevance_score", 0) for s in sources)
-
         avg_relevance = sum(s.get("relevance_score", 0) for s in sources) / len(sources)
 
-        if max_relevance < self.threshold:
+        # ✅ CORRIGÉ: Utiliser la moyenne au lieu du max pour une meilleure décision
+        # Cette approche est plus robuste quand on a plusieurs sources partielles
+        if max_relevance < self.threshold or avg_relevance < (self.threshold * 0.8):
             logger.info(
-                f"Fallback triggered: max_relevance={max_relevance:.3f} < threshold={self.threshold}"
+                f"Fallback triggered: max_relevance={max_relevance:.3f}, "
+                f"avg_relevance={avg_relevance:.3f}, threshold={self.threshold}"
             )
             return True
 

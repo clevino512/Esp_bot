@@ -19,7 +19,7 @@ class Message(BaseModel):
     content: str
     sources: list[Source] | None = None
     feedback: FeedbackType | None = None
-    created_at: datetime
+    created_at: datetime = Field(default_factory=datetime.utcnow)
 
     class Config:
         json_encoders = {
@@ -40,7 +40,7 @@ class ChatResponse(BaseModel):
     session_id: str
     confidence: float = Field(ge=0, le=1)
     is_fallback: bool = False
-    created_at: datetime
+    created_at: datetime = Field(default_factory=datetime.utcnow)
 
     class Config:
         json_encoders = {

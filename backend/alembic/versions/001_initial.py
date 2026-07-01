@@ -62,7 +62,7 @@ def upgrade() -> None:
         sa.Column('chunk_index', sa.Integer(), nullable=False),
         sa.Column('content', sa.Text(), nullable=False),
         sa.Column('embedding_id', sa.String(length=100), nullable=True),
-        sa.Column('metadata', sa.String(length=500), nullable=True),
+        sa.Column('chunk_metadata', sa.String(length=500), nullable=True),
         sa.Column('created_at', sa.DateTime(), nullable=False, server_default=sa.text('now()')),
         sa.ForeignKeyConstraint(['document_id'], ['documents.id'], ondelete='CASCADE'),
         sa.PrimaryKeyConstraint('id'),

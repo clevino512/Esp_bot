@@ -1,7 +1,9 @@
 # Virtual environment
 .venv/
-env/
 venv/
+__pycache__/
+*.pyc
+.env
 
 # Build artifacts
 build/
@@ -21,3 +23,11 @@ __pycache__/
 # VS Code / IDE
 .vscode/
 .idea/
+
+# Modèles d'IA / HuggingFace local
+backend/scripts/storage/hf_cache/
+*.safetensors
+**/paraphrase-multilingual-MiniLM-L12-v2/
+*.bin
+*.safetensors
+*.onnx

@@ -102,10 +102,27 @@ export function useChat() {
         addMessage(createAssistantMessage(response, 'text'))
       } catch (err) {
         setMessages(prev => prev.filter(m => m.id !== typingId))
-        const error = err as { response?: { data?: { detail?: string } } }
+        const error = err as {
+          response?: {
+            data?: { detail?: string; error?: string | { message?: string } }
+            status?: number
+          }
+          code?: string
+          message?: string
+        }
+
+        const backendErrorMessage =
+          typeof error.response?.data?.error === 'string'
+            ? error.response.data.error
+            : error.response?.data?.error?.message || error.response?.data?.detail
+
+        const timeoutMessage =
+          error.code === 'ECONNABORTED' || error.message?.includes('timeout')
+            ? 'Le serveur met trop de temps à répondre. Réessayez dans quelques secondes.'
+            : undefined
+
         toast.error(
-          error.response?.data?.detail ||
-            'Erreur de connexion. Vérifiez que le serveur est démarré.'
+          backendErrorMessage || timeoutMessage || 'Erreur de connexion. Vérifiez que le serveur est démarré.'
         )
       } finally {
         setIsLoading(false)

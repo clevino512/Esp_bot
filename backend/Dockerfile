@@ -6,6 +6,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
     ffmpeg \
     libportaudio2 \
+    libsndfile1-dev \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
@@ -14,6 +15,7 @@ WORKDIR /app
 # Install Python dependencies
 COPY requirements.txt ./
 RUN pip install --upgrade pip && \
+    pip install --no-cache-dir "numpy>=1.24.0,<2.0.0" && \
     pip install --no-cache-dir -r requirements.txt
 
 # ── Development ───────────────────────────────────────────────────────────────

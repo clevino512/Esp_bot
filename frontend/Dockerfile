@@ -4,14 +4,14 @@ COPY package*.json ./
 
 # ── Development ───────────────────────────────────────────────────────────────
 FROM base AS development
-RUN npm install
+RUN npm install -g npm@latest && npm install
 COPY . .
 EXPOSE 3000
 CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
 
 # ── Builder ───────────────────────────────────────────────────────────────────
 FROM base AS builder
-RUN npm ci
+RUN npm install -g npm@latest && npm ci
 COPY . .
 ARG VITE_API_BASE_URL=http://localhost:8000
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL

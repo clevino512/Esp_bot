@@ -1,6 +1,8 @@
+# app/models/user.py
+
 from datetime import datetime
 from typing import Annotated
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 from app.config.constants import UserRole
 
@@ -16,6 +18,7 @@ class UserCreate(UserBase):
 
 
 class UserLogin(BaseModel):
+    # ✅ Champs dédupliqués — garder uniquement la version typée
     email: EmailStr
     password: Annotated[str, Field(min_length=1)]
 
@@ -28,8 +31,26 @@ class UserResponse(BaseModel):
     is_active: bool
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}  # ✅ syntaxe Pydantic v2
+
+    @field_validator("role", mode="before")
+    @classmethod
+    def normalize_role(cls, v):
+        """
+        Convertit la valeur brute de la DB (str 'admin'/'user')
+        en instance UserRole, insensible à la casse.
+        """
+        if isinstance(v, UserRole):
+            return v
+        if isinstance(v, str):
+            try:
+                return UserRole(v.lower())
+            except ValueError:
+                raise ValueError(
+                    f"Rôle invalide : '{v}'. Valeurs acceptées : "
+                    f"{[r.value for r in UserRole]}"
+                )
+        raise ValueError(f"Type de rôle inattendu : {type(v)}")
 
 
 class Token(BaseModel):
@@ -40,8 +61,9 @@ class Token(BaseModel):
 
 
 class TokenPayload(BaseModel):
-    sub: str  # user_id
+    sub: str       # user_id
     email: str
     role: str
     exp: datetime
     iat: datetime
+    type: str = "access"  # ✅ champ manquant utilisé dans auth_service.py

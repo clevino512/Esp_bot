@@ -14,6 +14,8 @@ settings = get_settings()
 
 class TextPreprocessor:
     def __init__(
+
+        
         self,
         chunk_size: int | None = None,
         chunk_overlap: int | None = None,
@@ -37,8 +39,12 @@ class TextPreprocessor:
     def clean(self, text: str) -> str:
         text = text.strip()
 
-        text = re.sub(r'["""]', '"', text)
-        text = re.sub(r'[''']', "'", text)
+        # ✅ Guillemets doubles typographiques → standard
+        text = re.sub(r'[\u201c\u201d\u201e]', '"', text)
+
+        # ✅ Guillemets simples typographiques → apostrophe standard
+        text = re.sub(r'[\u2018\u2019\u201a]', "'", text)
+
         text = re.sub(r'\s+', ' ', text)
         text = re.sub(r'\n{3,}', '\n\n', text)
 
@@ -84,7 +90,7 @@ class TextPreprocessor:
         return self.chunk(text, metadata)
 
     def extract_keywords(self, text: str, max_keywords: int = 10) -> list[str]:
-        words = re.findall(r'\b[a-zA-ZÀ-ÿ]{4,}\b', text.lower())
+        words = re.findall(r'\b[a-zA-Z\u00C0-\u00FF]{4,}\b', text.lower())
         word_freq: dict[str, int] = {}
         for word in words:
             word_freq[word] = word_freq.get(word, 0) + 1
