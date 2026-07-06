@@ -3,6 +3,7 @@ from typing import Any
 import json
 import logging
 
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.repositories.conversation_repository import ConversationRepository
@@ -57,33 +58,56 @@ class AdminService:
     ) -> tuple[list[ConversationLog], int]:
         offset = (page - 1) * page_size
 
+        # Fetch assistant messages with the preceding user question via subquery
+        stmt = text("""
+            SELECT
+                m.id,
+                m.content AS bot_response,
+                m.sources,
+                m.confidence,
+                m.is_fallback,
+                m.feedback,
+                m.response_time_ms,
+                m.created_at,
+                c.session_id,
+                (
+                    SELECT um.content
+                    FROM messages um
+                    WHERE um.conversation_id = m.conversation_id
+                      AND um.role = 'user'
+                      AND um.id < m.id
+                    ORDER BY um.id DESC
+                    LIMIT 1
+                ) AS user_query
+            FROM messages m
+            JOIN conversations c ON m.conversation_id = c.id
+            WHERE m.role = 'assistant'
+            ORDER BY m.created_at DESC
+            LIMIT :limit OFFSET :offset
+        """)
         messages = await self.conversation_repo.db.execute(
-            "SELECT m.*, c.session_id FROM messages m "
-            "JOIN conversations c ON m.conversation_id = c.id "
-            "WHERE m.role = 'assistant' "
-            "ORDER BY m.created_at DESC "
-            f"LIMIT {page_size} OFFSET {offset}"
+            stmt, {"limit": page_size, "offset": offset}
         )
-        total = await self.conversation_repo.db.execute(
-            "SELECT COUNT(*) FROM messages WHERE role = 'assistant'"
-        )
+
+        count_stmt = text("SELECT COUNT(*) FROM messages WHERE role = 'assistant'")
+        total_result = await self.conversation_repo.db.execute(count_stmt)
 
         logs = []
-        for row in messages:
+        for row in messages.mappings():
             logs.append(ConversationLog(
-                id=str(row.id),
-                session_id=row.session_id,
-                user_query="",
-                bot_response=row.content,
-                sources=json.loads(row.sources) if row.sources else [],
-                confidence=row.confidence or 0.0,
-                is_fallback=row.is_fallback,
-                feedback=row.feedback,
-                response_time_ms=row.response_time_ms or 0,
-                created_at=row.created_at,
+                id=str(row["id"]),
+                session_id=row["session_id"],
+                user_query=row["user_query"] or "",
+                bot_response=row["bot_response"],
+                sources=json.loads(row["sources"]) if row["sources"] else [],
+                confidence=row["confidence"] or 0.0,
+                is_fallback=row["is_fallback"],
+                feedback=row["feedback"],
+                response_time_ms=row["response_time_ms"] or 0,
+                created_at=row["created_at"],
             ))
 
-        return logs, total.scalar() or 0
+        return logs, total_result.scalar() or 0
 
     async def get_fallback_questions(
         self,
@@ -114,15 +138,20 @@ class AdminService:
         end_date = datetime.utcnow()
         start_date = end_date - timedelta(days=days)
 
-        result = await self.conversation_repo.db.execute(
-            "SELECT content, COUNT(*) as count "
-            "FROM messages "
-            "WHERE role = 'user' "
-            f"AND created_at >= '{start_date.isoformat()}' "
-            f"AND created_at <= '{end_date.isoformat()}' "
-            "GROUP BY content "
-            "ORDER BY count DESC "
-            f"LIMIT {limit}"
-        )
+        stmt = text("""
+            SELECT content, COUNT(*) AS count
+            FROM messages
+            WHERE role = 'user'
+              AND created_at >= :start_date
+              AND created_at <= :end_date
+            GROUP BY content
+            ORDER BY count DESC
+            LIMIT :limit
+        """)
+        result = await self.conversation_repo.db.execute(stmt, {
+            "start_date": start_date,
+            "end_date": end_date,
+            "limit": limit,
+        })
 
-        return [{"question": row.content, "count": row.count} for row in result]
+        return [{"question": row["content"], "count": row["count"]} for row in result.mappings()]

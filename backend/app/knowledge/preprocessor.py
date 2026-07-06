@@ -6,7 +6,7 @@ import unicodedata
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from app.config import get_settings
-from app.config.constants import DEFAULT_CHUNK_SIZE, DEFAULT_CHUNK_OVERLAP
+from app.config.constants import DEFAULT_CHUNK_SIZE, DEFAULT_CHUNK_OVERLAP, MIN_CHUNK_SIZE
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
@@ -29,7 +29,7 @@ class TextPreprocessor:
                 "\n\n\n",
                 "\n\n",
                 "\n",
-                ".",
+                ". ",   # Period + space to avoid splitting abbreviations (M., Dr., etc.)
                 " ",
                 "",
             ],
@@ -64,7 +64,7 @@ class TextPreprocessor:
 
         chunks = []
         for i, chunk_text in enumerate(raw_chunks):
-            if len(chunk_text.strip()) < 50:
+            if len(chunk_text.strip()) < MIN_CHUNK_SIZE:
                 continue
 
             chunk_metadata = {

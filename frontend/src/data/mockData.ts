@@ -12,34 +12,38 @@ import type {
 export const mockSources: Source[] = [
   {
     id: 's1',
-    document: 'Reglement des etudes ESPA 2025-2026',
+    documentId: 's1',
+    title: 'Reglement des etudes ESPA 2025-2026',
     category: 'reglement',
     page: 12,
     relevanceScore: 0.92,
-    excerpt: 'Les etudiants doivent obtenir une moyenne generale minimale de 10/20 pour valider leur semestre...',
+    content: 'Les etudiants doivent obtenir une moyenne generale minimale de 10/20 pour valider leur semestre...',
   },
   {
     id: 's2',
-    document: 'Calendrier academique 2025-2026',
+    documentId: 's2',
+    title: 'Calendrier academique 2025-2026',
     category: 'general',
     page: 3,
     relevanceScore: 0.87,
-    excerpt: 'La rentree des classes est fixee au 15 septembre 2025. Les examens de fin de semestre se derouleront...',
+    content: 'La rentree des classes est fixee au 15 septembre 2025. Les examens de fin de semestre se derouleront...',
   },
   {
     id: 's3',
-    document: 'Guide des procedures administratives',
+    documentId: 's3',
+    title: 'Guide des procedures administratives',
     category: 'inscription',
     page: 7,
     relevanceScore: 0.81,
-    excerpt: 'Pour obtenir votre releve de notes, vous devez vous presenter a la scolarite avec votre carte etudiant...',
+    content: 'Pour obtenir votre releve de notes, vous devez vous presenter a la scolarite avec votre carte etudiant...',
   },
   {
     id: 's4',
-    document: 'FAQ Etudiants ESPA',
+    documentId: 's4',
+    title: 'FAQ Etudiants ESPA',
     category: 'general',
     relevanceScore: 0.78,
-    excerpt: 'Les inscriptions sont ouvertes du 1er juillet au 31 aout. Pour les etudiants en reinscription...',
+    content: 'Les inscriptions sont ouvertes du 1er juillet au 31 aout. Pour les etudiants en reinscription...',
   },
 ]
 
@@ -255,7 +259,7 @@ export function getMockResponse(message: string): { content: string; sources: So
   }
 
   return {
-    content: 'Je suis la pour vous aider ! Posez-moi vos questions sur les procedures administratives, les examens, ou toute autre information concernant l\'ESPA.',
+    content: "Je suis la pour vous aider ! Posez-moi vos questions sur les procedures administratives, les examens, ou toute autre information concernant l'ESPA.",
     sources: [],
     confidence: 0.5,
   }

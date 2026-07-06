@@ -27,28 +27,24 @@ export function StatsPanel() {
           label="Conversations totales"
           value={stats.totalConversations.toLocaleString('fr')}
           icon={<MessageSquare className="w-5 h-5" />}
-          change={{ value: 12, positive: true }}
           color="blue"
         />
         <StatCard
           label="Taux de satisfaction"
           value={stats.helpfulRate !== undefined ? `${Math.round(stats.helpfulRate * 100)}%` : 'N/A'}
           icon={<CheckCircle className="w-5 h-5" />}
-          change={{ value: 3, positive: true }}
           color="green"
         />
         <StatCard
           label="Temps de reponse moy."
           value={stats.avgResponseTime ? `${(stats.avgResponseTime / 1000).toFixed(1)}s` : 'N/A'}
           icon={<Clock className="w-5 h-5" />}
-          change={{ value: 5, positive: false }}
           color="amber"
         />
         <StatCard
           label="Taux de fallback"
           value={stats.fallbackRate !== undefined ? `${Math.round(stats.fallbackRate * 100)}%` : 'N/A'}
           icon={<AlertTriangle className="w-5 h-5" />}
-          change={{ value: 8, positive: false }}
           color="sky"
         />
       </div>

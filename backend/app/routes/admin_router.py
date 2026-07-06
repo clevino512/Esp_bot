@@ -186,6 +186,17 @@ async def reindex_document(
     )
 
 
+@router.get("/top-questions", response_model=list[dict])
+async def get_top_questions(
+    db: DatabaseDep,
+    days: int = Query(7, ge=1, le=90),
+    limit: int = Query(10, ge=1, le=50),
+    current_user = Depends(get_current_admin),
+):
+    admin_service = AdminService(db)
+    return await admin_service.get_top_questions(days=days, limit=limit)
+
+
 @router.get("/stats", response_model=dict)
 async def get_stats(
     db: DatabaseDep,

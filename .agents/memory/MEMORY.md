@@ -1,0 +1,2 @@
+- [API base URL](api-base-url.md) — frontend doit utiliser `/api/v1` (relative) pas `localhost:8000` pour le proxy Vite
+- [SQLAlchemy text() row access](sqlalchemy-text-rows.md) — avec `text()` + `execute()`, utiliser `.mappings()` + accès par clé `row["col"]`, jamais `row.col`
