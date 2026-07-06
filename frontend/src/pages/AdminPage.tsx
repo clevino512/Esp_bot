@@ -7,6 +7,7 @@ import { DocumentManager } from '@/components/admin/DocumentManager'
 import { LogsViewer } from '@/components/admin/LogsViewer'
 import { StatsPanel } from '@/components/admin/StatsPanel'
 import { SUSPanel } from '@/components/admin/SUSPanel'
+import { TestimonialsPanel } from '@/components/admin/TestimonialsPanel'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { Button } from '@/components/ui/Button'
 import { SettingsPage } from './SettingsPage'
@@ -17,6 +18,7 @@ const PAGE_TITLES: Record<string, string> = {
   'logs': 'Conversations',
   'stats': 'Statistiques',
   'sus': 'Évaluation SUS',
+  'testimonials': 'Témoignages utilisateurs',
   'settings': 'Paramètres',
 }
 
@@ -57,6 +59,7 @@ export function AdminPage() {
             <Route path="logs" element={<LogsViewer />} />
             <Route path="stats" element={<StatsPanel />} />
             <Route path="sus" element={<SUSPanel />} />
+            <Route path="testimonials" element={<TestimonialsPanel />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="*" element={<Navigate to="/admin" replace />} />
           </Routes>

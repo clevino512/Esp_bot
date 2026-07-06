@@ -1,2 +1,4 @@
 - [API base URL](api-base-url.md) — frontend doit utiliser `/api/v1` (relative) pas `localhost:8000` pour le proxy Vite
 - [SQLAlchemy text() row access](sqlalchemy-text-rows.md) — avec `text()` + `execute()`, utiliser `.mappings()` + accès par clé `row["col"]`, jamais `row.col`
+- [useChat history pattern](usechat-history-pattern.md) — pattern pour passer l'historique au LLM sans stale closure : useRef + useEffect pour suivre messages
+- [HMR hooks count](hmr-hooks-count.md) — ajouter des hooks dans un fichier utilisé via HMR nécessite un full restart workflow, pas juste HMR

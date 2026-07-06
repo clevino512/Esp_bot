@@ -69,6 +69,38 @@ class LLMClient:
 
         return response.choices[0].message.content or ""
 
+    async def generate_with_history(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        history: list[dict[str, str]] | None = None,
+    ) -> tuple[str, int]:
+        """
+        Generate a response using conversation history as context.
+        History is a list of {"role": "user"|"assistant", "content": "..."} dicts.
+        Only the last 6 messages (3 turns) are included to keep the context window small.
+        """
+        start = time.perf_counter()
+        messages: list[dict[str, str]] = [{"role": "system", "content": system_prompt}]
+
+        # Include recent history (last 6 messages = 3 Q/A turns)
+        if history:
+            for msg in history[-6:]:
+                if msg.get("role") in ("user", "assistant"):
+                    messages.append({"role": msg["role"], "content": msg["content"]})
+
+        messages.append({"role": "user", "content": user_prompt})
+
+        response = await self.client.chat.completions.create(
+            model=self.model,
+            messages=messages,
+            max_tokens=settings.OPENAI_MAX_TOKENS,
+            temperature=settings.OPENAI_TEMPERATURE,
+        )
+
+        elapsed_ms = int((time.perf_counter() - start) * 1000)
+        return response.choices[0].message.content or "", elapsed_ms
+
     async def generate_stream(
         self,
         system_prompt: str,

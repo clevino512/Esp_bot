@@ -16,6 +16,7 @@ from app.config import get_settings
 from app.config.constants import API_V1_PREFIX
 from app.db.session import init_db, close_db
 from app.routes import auth_router, chat_router, voice_router, admin_router
+from app.routes.testimonial_router import router as testimonial_router
 from app.middleware.request_logger import RequestLoggingMiddleware
 from app.middleware.rate_limiter import RateLimiterMiddleware
 
@@ -88,6 +89,7 @@ app.include_router(auth_router, prefix=API_V1_PREFIX)
 app.include_router(chat_router, prefix=API_V1_PREFIX)
 app.include_router(voice_router, prefix=API_V1_PREFIX)
 app.include_router(admin_router, prefix=API_V1_PREFIX)
+app.include_router(testimonial_router, prefix=API_V1_PREFIX)
 
 
 @app.get("/", tags=["Root"])

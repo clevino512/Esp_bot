@@ -42,6 +42,12 @@ export function useChat() {
   const [restoredMessageCount, setRestoredMessageCount] = useState(0)
   const [restoredFromDate, setRestoredFromDate] = useState<Date | null>(null)
   const sessionId = useRef<string>(getOrCreateSessionId())
+  // Keep a ref so sendTextMessage / sendVoiceMessage can read the latest
+  // messages without being stale (avoids adding `messages` to dep arrays).
+  const messagesRef = useRef(messages)
+  useEffect(() => {
+    messagesRef.current = messages
+  })
 
   useEffect(() => {
     const sid = sessionId.current
@@ -71,6 +77,20 @@ export function useChat() {
     setMessages(prev => [...prev, message])
   }, [])
 
+  /**
+   * Build a history array for the backend LLM from current messages.
+   * We skip the static welcome message (id='welcome') and streaming placeholders.
+   * We keep the last 6 real messages (3 Q/A turns) to limit context size.
+   */
+  const buildHistory = useCallback(
+    (currentMessages: Message[]): Array<{ role: string; content: string }> =>
+      currentMessages
+        .filter(m => m.id !== 'welcome' && !m.isStreaming && m.content.trim())
+        .slice(-6)
+        .map(m => ({ role: m.role, content: m.content })),
+    []
+  )
+
   const sendTextMessage = useCallback(
     async (content: string) => {
       if (!content.trim() || isLoading) return
@@ -78,6 +98,10 @@ export function useChat() {
       const userMsg = createUserMessage(content.trim(), 'text')
       addMessage(userMsg)
       setIsLoading(true)
+
+      // Snapshot messages BEFORE adding the typing indicator so history is clean.
+      // Use messagesRef.current to get the latest value without stale closure.
+      const historySnapshot = buildHistory([...messagesRef.current, userMsg])
 
       const typingId = crypto.randomUUID()
       setMessages(prev => [
@@ -97,6 +121,7 @@ export function useChat() {
           message: content.trim(),
           sessionId: sessionId.current,
           mode: 'text',
+          history: historySnapshot,
         })
         setMessages(prev => prev.filter(m => m.id !== typingId))
         addMessage(createAssistantMessage(response, 'text'))
@@ -139,6 +164,8 @@ export function useChat() {
       addMessage(userMsg)
       setIsLoading(true)
 
+      const historySnapshot = buildHistory([...messagesRef.current, userMsg])
+
       const typingId = crypto.randomUUID()
       setMessages(prev => [
         ...prev,
@@ -157,6 +184,7 @@ export function useChat() {
           message: transcript.trim(),
           sessionId: sessionId.current,
           mode: 'voice',
+          history: historySnapshot,
         })
         setMessages(prev => prev.filter(m => m.id !== typingId))
         addMessage(createAssistantMessage(response, 'voice'))
@@ -170,7 +198,7 @@ export function useChat() {
         setIsLoading(false)
       }
     },
-    [isLoading, addMessage]
+    [isLoading, addMessage, buildHistory, messages]
   )
 
   const handleFeedback = useCallback(

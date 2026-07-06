@@ -1,7 +1,11 @@
 import { Link } from 'react-router-dom'
 import { GraduationCap, Shield, BookOpen, Mic, Brain } from 'lucide-react'
 import { ChatWindow } from '@/components/chat/ChatWindow'
+import { TestimonialWidget } from '@/components/chat/TestimonialWidget'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
+
+// Read the session id stored by useChat without duplicating the hook
+const SESSION_KEY = 'unibot_session_id'
 
 const FEATURES = [
   { icon: Brain, label: 'Réponses contextuelles', desc: 'Basées sur les documents officiels ESPA' },
@@ -10,6 +14,8 @@ const FEATURES = [
 ]
 
 export function ChatPage() {
+  const sessionId = localStorage.getItem(SESSION_KEY) ?? undefined
+
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex flex-col">
       {/* Top nav */}
@@ -72,6 +78,9 @@ export function ChatPage() {
               </div>
             ))}
           </div>
+
+          {/* Testimonials */}
+          <TestimonialWidget sessionId={sessionId} />
 
           {/* Disclaimer */}
           <div className="p-4 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30 rounded-xl">
