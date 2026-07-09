@@ -1,6 +1,7 @@
 import asyncio
 import asyncpg
 
+
 db = "postgresql://postgres:rabenantenaina_clevin@localhost:5432/espa"
 
 async def check():

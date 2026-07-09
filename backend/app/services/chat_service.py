@@ -110,7 +110,7 @@ class ChatService:
         # ── 5. Persist assistant message ─────────────────────────────────────────
         confidence = max(s.get("relevance_score", 0) for s in sources) if sources else 0.0
 
-        await self.conversation_repo.add_message(
+        assistant_message = await self.conversation_repo.add_message(
             conversation_id=conversation.id,
             role="assistant",
             content=response_text,
@@ -132,12 +132,13 @@ class ChatService:
         ]
 
         return ChatResponse(
-            id=str(uuid.uuid4()),
+            id=str(assistant_message.id),
             response=response_text,
             sources=source_models,
             session_id=session_id,
             confidence=confidence,
             is_fallback=is_fallback,
+            created_at=assistant_message.created_at,
         )
 
     async def get_history(self, session_id: str) -> list[Message]:

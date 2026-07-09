@@ -197,49 +197,47 @@ export function MessageBubble({ message, onFeedback }: MessageBubbleProps) {
           {/* Fallback warning */}
           {isAssistant && isFallback && (
             <div className="flex items-center gap-1.5 px-1">
-              <Badge variant="warning">Hors domaine</Badge>
-              <span className="text-xs text-neutral-400">
-                Contactez la scolarité pour plus d'infos
-              </span>
-            </div>
-          )}
+              {/* ── Sources section ─────────────────────────────────────────── */}
+              {isAssistant && hasSources && (
+                <div >
+                  {/* Toggle button */}
+                  <button
+                    onClick={() => setSourcesOpen(p => !p)}
+                    className="flex items-center gap-1.5 text-xs text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
+                  >
+                    <BookOpen className="w-3.5 h-3.5" />
+                    <span>
+                      {message.sources!.length} source
+                      {message.sources!.length > 1 ? 's' : ''} trouvée
+                      {message.sources!.length > 1 ? 's' : ''}
+                    </span>
+                    {sourcesOpen
+                      ? <ChevronUp className="w-3 h-3" />
+                      : <ChevronDown className="w-3 h-3" />
+                    }
+                  </button>
 
-          {/* ── Sources section ─────────────────────────────────────────── */}
-          {isAssistant && hasSources && (
-            <div className="w-full">
-              {/* Toggle button */}
-              <button
-                onClick={() => setSourcesOpen(p => !p)}
-                className="flex items-center gap-1.5 text-xs text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
-              >
-                <BookOpen className="w-3.5 h-3.5" />
-                <span>
-                  {message.sources!.length} source
-                  {message.sources!.length > 1 ? 's' : ''} citée
-                  {message.sources!.length > 1 ? 's' : ''}
-                </span>
-                {sourcesOpen
-                  ? <ChevronUp className="w-3 h-3" />
-                  : <ChevronDown className="w-3 h-3" />
-                }
-              </button>
-
-              {/* Source cards */}
-              {sourcesOpen && (
-                <div className="mt-2.5 space-y-2 animate-slide-down">
-                  {message.sources!.map(source => (
-                    <SourceCard
-                      key={source.id}
-                      source={source}
-                      onOpen={setSelectedSource}
-                    />
-                  ))}
-                  <p className="text-[10px] text-neutral-400 dark:text-neutral-500 flex items-center gap-1 px-0.5">
-                    <BookOpen className="w-2.5 h-2.5" />
-                    Sources issues des documents officiels ESPA
-                  </p>
+                  {/* Source cards */}
+                  {sourcesOpen && (
+                    <div className="mt-2.5 space-y-2 animate-slide-down">
+                      {message.sources!.map(source => (
+                        <SourceCard
+                          key={source.id}
+                          source={source}
+                          onOpen={setSelectedSource}
+                        />
+                      ))}
+                      <p className="text-[10px] text-neutral-400 dark:text-neutral-500 flex items-center gap-1 px-0.5">
+                        <BookOpen className="w-2.5 h-2.5" />
+                        Sources issues des documents officiels ESPA
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
+              <span className="text-xs text-neutral-400">
+                Merci de consulter la scolarité pour plus de détails.
+              </span>
             </div>
           )}
 

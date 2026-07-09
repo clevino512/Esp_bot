@@ -28,6 +28,18 @@ class TestChatAPI:
         assert response.status_code in [200, 201, 401]
 
     @pytest.mark.asyncio
+    async def test_chat_message_returns_created_at(self, client: AsyncClient):
+        response = await client.post(
+            "/api/v1/chat/message",
+            json={"message": "Quel est ton nom?"}
+        )
+        assert response.status_code in [200, 201]
+        data = response.json()
+        assert isinstance(data.get("created_at"), str)
+        assert data.get("created_at") != ""
+        assert isinstance(data.get("id"), str)
+
+    @pytest.mark.asyncio
     async def test_chat_message_with_auth(self, auth_client: AsyncClient):
         response = await auth_client.post(
             "/api/v1/chat/message",
