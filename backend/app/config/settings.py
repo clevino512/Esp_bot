@@ -19,14 +19,14 @@ class Settings(BaseSettings):
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = True
 
-    # # ── LLM pour docker ──────────────────────────────────────────────────
-    # LLM_PROVIDER: Literal["openai", "ollama"] = "openai"
-    # OPENAI_API_KEY: str = ""
-    # OPENAI_MODEL: str = "gpt-4o-mini"
-    # OPENAI_MAX_TOKENS: int = 1000
-    # OPENAI_TEMPERATURE: float = 0.2
-    # OLLAMA_BASE_URL: str = "http://ollama:11434"
-    # OLLAMA_MODEL: str = "mistral:7b"
+    # ── LLM  ──────────────────────────────────────────────────
+    LLM_PROVIDER: Literal["openai", "ollama"] = "openai"
+    OPENAI_API_KEY: str = ""
+    OPENAI_MODEL: str = "gpt-4o-mini"
+    OPENAI_MAX_TOKENS: int = 1000
+    OPENAI_TEMPERATURE: float = 0.2
+    OLLAMA_BASE_URL: str = "http://ollama:11434"
+    OLLAMA_MODEL: str = "mistral:7b"
 
 
     # ── LLM en developpement ──────────────────────────────────────────────────

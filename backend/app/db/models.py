@@ -133,10 +133,7 @@ class FeedbackLog(Base):
 
     id            = Column(Integer, primary_key=True, index=True)
     message_id    = Column(Integer, ForeignKey("messages.id", ondelete="CASCADE"), nullable=False)
-
-    # ✅ Même correction pour FeedbackType
     feedback_type = Column(String(20), nullable=False)
-
     user_query  = Column(Text, nullable=True)
     bot_response = Column(Text, nullable=True)
     created_at  = Column(DateTime, default=datetime.utcnow, nullable=False)
@@ -144,3 +141,27 @@ class FeedbackLog(Base):
     __table_args__ = (
         Index("ix_feedback_created", "created_at"),
     )
+
+class Setting(Base):
+    __tablename__ = "settings"  
+
+    id              = Column(Integer, primary_key=True, index=True)
+
+    # --- RAG ---
+    top_k           = Column(Integer, nullable=False, default=5)
+    min_score       = Column(Float, nullable=False, default=0.65)
+    fallback_threshold = Column(Float, nullable=False, default=0.40)
+    chunk_size      = Column(Integer, nullable=False, default=500)
+    chunk_overlap   = Column(Integer, nullable=False, default=50)
+
+    # --- LLM ---
+    llm_provider    = Column(String(50), nullable=False, default="openai")
+    llm_model       = Column(String(50), nullable=False, default="gpt-4o-mini")
+    max_tokens      = Column(Integer, nullable=False, default=1000)
+    temperature     = Column(Float, nullable=False, default=0.2)
+
+    # --- Notifications ---
+    notify_fallback       = Column(Boolean, nullable=False, default=True)
+    notify_weekly_report  = Column(Boolean, nullable=False, default=True)
+
+    updated_at      = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

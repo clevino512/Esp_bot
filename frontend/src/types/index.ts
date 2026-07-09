@@ -195,3 +195,19 @@ export interface ApiError {
   code: string
   status: number
 }
+
+// ── Settings ──────────────────────────────────────────────────────────────────
+
+export interface AppSettings {
+  top_k: number
+  min_score: number
+  fallback_threshold: number
+  chunk_size: number
+  chunk_overlap: number
+  llm_provider: string
+  llm_model: string
+  max_tokens: number
+  temperature: number
+  notify_fallback: boolean
+  notify_weekly_report: boolean
+}

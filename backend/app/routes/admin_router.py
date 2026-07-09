@@ -225,11 +225,11 @@ async def get_sus_stats(
     scores = [r["score"] for r in records]
 
     distribution_defs = [
-        {"label": "F — Inacceptable", "range": "0–50", "min": 0, "max": 51},
-        {"label": "D — Médiocre", "range": "51–67", "min": 51, "max": 68},
-        {"label": "C — Acceptable", "range": "68–79", "min": 68, "max": 80},
-        {"label": "B — Bon", "range": "80–89", "min": 80, "max": 90},
-        {"label": "A — Excellent", "range": "90–100", "min": 90, "max": 101},
+        {"label": "Inacceptable", "range": "0–50", "min": 0, "max": 51},
+        {"label": "Médiocre", "range": "51–67", "min": 51, "max": 68},
+        {"label": "Acceptable", "range": "68–79", "min": 68, "max": 80},
+        {"label": "Bon", "range": "80–89", "min": 80, "max": 90},
+        {"label": "Excellent", "range": "90–100", "min": 90, "max": 101},
     ]
 
     distribution = [

@@ -17,6 +17,7 @@ from .document import (
     DocumentIngestRequest,
 )
 from .admin import DashboardStats, ConversationLog, FallbackQuestion
+from .settings import SettingsSchema
 
 __all__ = [
     # Base
@@ -47,4 +48,6 @@ __all__ = [
     "DashboardStats",
     "ConversationLog",
     "FallbackQuestion",
+    # Settings
+    "SettingsSchema",
 ]
