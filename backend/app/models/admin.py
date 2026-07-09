@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 from pydantic import BaseModel
 
 from app.config.constants import FeedbackType
@@ -27,7 +28,7 @@ class ConversationLog(BaseModel):
     session_id: str
     user_query: str
     bot_response: str
-    sources: list[str]
+    sources: list[dict[str, Any]]
     confidence: float
     is_fallback: bool
     feedback: FeedbackType | None

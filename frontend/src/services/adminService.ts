@@ -178,7 +178,7 @@ export interface BackendConversationLog {
   session_id: string
   user_query: string
   bot_response: string
-  sources: string[]
+  sources: any[]
   confidence: number
   is_fallback: boolean
   feedback: 'helpful' | 'not_helpful' | null

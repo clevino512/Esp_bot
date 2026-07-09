@@ -28,6 +28,9 @@ class Settings(BaseSettings):
     OLLAMA_BASE_URL: str = "http://ollama:11434"
     OLLAMA_MODEL: str = "mistral:7b"
 
+    #Timezone 
+    TIMEZONE: str = "Indian/Antananarivo"
+
 
     # ── LLM en developpement ──────────────────────────────────────────────────
     LLM_PROVIDER: Literal["openai", "ollama"] = "openai"

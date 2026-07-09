@@ -32,7 +32,6 @@ _FOLLOWUP_STARTERS = (
 # Pronouns / determiners that indicate reference to a previous subject
 _FOLLOWUP_PRONOUNS = ("il ", "elle ", "ils ", "elles ", "ça ", "ca ", "ce ", "cela ", "celui ", "celle ")
 
-
 class ChatService:
     def __init__(self, db: AsyncSession):
         self.db = db
