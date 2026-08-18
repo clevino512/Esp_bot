@@ -40,51 +40,7 @@ export function SourceDetailModal({ source, onClose }: SourceDetailModalProps) {
     <Modal open={!!source} onClose={onClose} title="Source citée" size="md">
       <div className="space-y-5">
 
-        {/* Document header */}
-        <div className="flex items-start gap-3 p-4 bg-primary-50 dark:bg-primary-900/20 rounded-xl border border-primary-100 dark:border-primary-800/30">
-          <div className="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center flex-shrink-0">
-            <FileText className="w-5 h-5 text-primary-600 dark:text-primary-400" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white leading-tight mb-2">
-              {title}
-            </h3>
-            <div className="flex flex-wrap items-center gap-1.5">
-              {category && <Badge variant="primary">{category}</Badge>}
-              {source.page && <Badge variant="default">Page {source.page}</Badge>}
-            </div>
-          </div>
-        </div>
-
-        {/* Relevance score */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">
-              Score de pertinence
-            </span>
-            <span className={clsx(
-              'text-sm font-bold',
-              pct >= 80 ? 'text-success-600 dark:text-success-400' :
-              pct >= 60 ? 'text-primary-600 dark:text-primary-400' :
-              'text-warning-600 dark:text-warning-400'
-            )}>
-              {pct}%
-            </span>
-          </div>
-          <div className="h-2.5 bg-neutral-100 dark:bg-neutral-700 rounded-full overflow-hidden">
-            <div
-              className={clsx('h-full rounded-full transition-all duration-700', barColor)}
-              style={{ width: `${pct}%` }}
-            />
-          </div>
-          <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1.5">
-            {pct >= 80 ? 'Pertinence élevée — extrait très lié à votre question.' :
-             pct >= 60 ? 'Pertinence modérée — extrait partiellement lié à votre question.' :
-             'Pertinence faible — extrait utilisé comme référence complémentaire.'}
-          </p>
-        </div>
-
-        {/* Chunk content */}
+      {/* Chunk content */}
         <div>
           <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide mb-2">
             Extrait du document

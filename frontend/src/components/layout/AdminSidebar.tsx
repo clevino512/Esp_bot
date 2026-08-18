@@ -9,7 +9,7 @@ const navItems = [
   { to: '/admin/documents', icon: FileText, label: 'Documents' },
   { to: '/admin/logs', icon: MessageSquare, label: 'Conversations' },
   { to: '/admin/stats', icon: BarChart2, label: 'Statistiques' },
-  { to: '/admin/sus', icon: Star, label: 'Évaluation SUS' },
+  // { to: '/admin/sus', icon: Star, label: 'Évaluation SUS' },
   { to: '/admin/testimonials', icon: MessageSquareQuote, label: 'Témoignages' },
   { to: '/admin/settings', icon: Settings, label: 'Paramètres' },
 ]
