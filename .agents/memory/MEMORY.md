@@ -3,3 +3,4 @@
 - [useChat history pattern](usechat-history-pattern.md) — pattern pour passer l'historique au LLM sans stale closure : useRef + useEffect pour suivre messages
 - [HMR hooks count](hmr-hooks-count.md) — ajouter des hooks dans un fichier utilisé via HMR nécessite un full restart workflow, pas juste HMR
 - [Secure transcript access](transcript-access.md) — les demandes personnelles de relevé doivent passer par le registre scolarité et une validation serveur à chaque requête
+- [Chat timestamp timezones](chat-timezones.md) — les dates UTC de l’API doivent porter leur fuseau avant l’affichage local du chat

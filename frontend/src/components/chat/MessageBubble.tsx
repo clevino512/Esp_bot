@@ -21,6 +21,7 @@ import type { Message, Source } from '@/types'
 import { Badge } from '@/components/ui/Badge'
 import { SourceDetailModal } from './SourceDetailModal'
 import { isSourceAllowed } from '@/services/documentPermissionService'
+import { parseApiDate } from '@/utils/dateUtils'
 
 interface MessageBubbleProps {
   message: Message
@@ -384,7 +385,7 @@ export function MessageBubble({
           >
             <span className="text-[11px] text-neutral-400 dark:text-neutral-500">
               {format(
-                new Date(message.timestamp),
+                parseApiDate(message.timestamp),
                 'HH:mm',
                 {
                   locale: fr,

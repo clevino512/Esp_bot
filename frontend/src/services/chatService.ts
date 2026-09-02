@@ -1,5 +1,6 @@
 import api from '@/lib/api'
 import type { ChatRequest, ChatResponse, Message, Source } from '@/types'
+import { parseApiDate } from '@/utils/dateUtils'
 
 export interface BackendChatResponse {
   id: string
@@ -77,7 +78,7 @@ export async function getConversationHistory(sessionId: string): Promise<{
     role: m.role as 'user' | 'assistant',
     content: m.content,
     mode: 'text' as const,
-    timestamp: new Date(m.created_at),
+    timestamp: parseApiDate(m.created_at),
     sources: m.sources?.map((s) => ({
       id: s.document_id.toString(),
       documentId: s.document_id.toString(),
@@ -124,7 +125,7 @@ export function createAssistantMessage(response: ChatResponse, mode: Message['mo
     role: 'assistant',
     content: response.content,
     mode,
-    timestamp: new Date(response.timestamp),
+    timestamp: parseApiDate(response.timestamp),
     sources: response.sources,
     confidence: response.confidence,
   }

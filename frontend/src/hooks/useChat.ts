@@ -9,6 +9,7 @@ import {
   submitFeedback,
   getConversationHistory,
 } from '@/services/chatService'
+import { parseApiDate } from '@/utils/dateUtils'
 
 const SESSION_KEY = 'unibot_session_id'
 const SESSION_DATE_KEY = 'unibot_session_date'
@@ -60,7 +61,7 @@ export function useChat() {
             timestamp:
               m.timestamp instanceof Date
                 ? m.timestamp
-                : new Date(m.timestamp as unknown as string),
+                : parseApiDate(m.timestamp as unknown as string),
           }))
           setMessages([WELCOME_MESSAGE, ...restored])
           setRestoredMessageCount(restored.length)

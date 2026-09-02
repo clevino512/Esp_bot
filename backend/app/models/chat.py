@@ -1,9 +1,19 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 from pydantic import BaseModel, Field
 
 from app.config.constants import FeedbackType, MAX_MESSAGE_LENGTH
 from app.models.student import StudentVerification
+
+
+def serialize_utc_datetime(value: datetime) -> str:
+    """Serialize legacy naive UTC datetimes with an explicit UTC suffix."""
+    aware_value = (
+        value.replace(tzinfo=timezone.utc)
+        if value.tzinfo is None
+        else value.astimezone(timezone.utc)
+    )
+    return aware_value.isoformat().replace("+00:00", "Z")
 
 
 class Source(BaseModel):
@@ -24,7 +34,7 @@ class Message(BaseModel):
 
     class Config:
         json_encoders = {
-            datetime: lambda v: v.isoformat(),
+            datetime: serialize_utc_datetime,
         }
 
 
@@ -46,7 +56,7 @@ class ChatResponse(BaseModel):
 
     class Config:
         json_encoders = {
-            datetime: lambda v: v.isoformat(),
+            datetime: serialize_utc_datetime,
         }
 
 
