@@ -17,9 +17,9 @@ export function ChatPage() {
   const sessionId = localStorage.getItem(SESSION_KEY) ?? undefined
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex flex-col">
+    <div className="h-screen overflow-hidden bg-neutral-50 dark:bg-neutral-950 flex flex-col">
       {/* Top nav */}
-      <header className="sticky top-0 z-30 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-md border-b border-neutral-200 dark:border-neutral-800">
+      <header className="flex-shrink-0 sticky top-0 z-30 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-md border-b border-neutral-200 dark:border-neutral-800">
         <div className="flex items-center h-16 px-4 max-w-screen-lg mx-auto gap-4">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-primary-600 flex items-center justify-center">
@@ -47,7 +47,7 @@ export function ChatPage() {
       </header>
 
       {/* Main */}
-      <main className="flex-1 max-w-screen-lg mx-auto w-full px-4 py-6 flex flex-col lg:flex-row gap-6">
+      <main className="flex-1 min-h-0 max-w-screen-lg mx-auto w-full px-4 py-6 flex flex-col lg:flex-row gap-6 overflow-hidden">
         {/* Sidebar info */}
         <aside className="hidden lg:flex flex-col gap-5 w-72 flex-shrink-0">
           {/* ESPA info card */}
@@ -91,13 +91,13 @@ export function ChatPage() {
         </aside>
 
         {/* Chat */}
-        <div className="flex-1 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-card overflow-hidden flex flex-col" style={{ minHeight: '75vh' }}>
+        <div className="flex-1 min-h-0 h-full bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-card overflow-hidden flex flex-col">
           <ChatWindow />
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-neutral-200 dark:border-neutral-800 py-4 px-4">
+      <footer className="flex-shrink-0 border-t border-neutral-200 dark:border-neutral-800 py-4 px-4">
         <p className="text-center text-xs text-neutral-400 dark:text-neutral-600">
           UniBot ESPA — PFE STIC 2025-2026 | Université d'Antsiranana, Madagascar
         </p>

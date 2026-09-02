@@ -115,9 +115,9 @@ export function ChatWindow() {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full min-h-0">
       {/* Toolbar */}
-      <div className="flex items-center justify-between px-5 py-3 border-b border-neutral-200 dark:border-neutral-800 gap-2">
+      <div className="flex-shrink-0 flex items-center justify-between px-5 py-3 border-b border-neutral-200 dark:border-neutral-800 gap-2">
         <div className="flex items-center gap-2 min-w-0">
           <div className="w-2 h-2 rounded-full bg-success-500 animate-pulse-soft flex-shrink-0" />
           <span className="text-sm text-neutral-600 dark:text-neutral-400 truncate">
@@ -153,7 +153,7 @@ export function ChatWindow() {
 
       {/* History restored banner */}
       {showRestoredBanner && (
-        <div className="flex items-center gap-3 px-5 py-2.5 bg-primary-50 dark:bg-primary-900/20 border-b border-primary-100 dark:border-primary-800/30 animate-fade-in">
+        <div className="flex-shrink-0 flex items-center gap-3 px-5 py-2.5 bg-primary-50 dark:bg-primary-900/20 border-b border-primary-100 dark:border-primary-800/30 animate-fade-in">
           <History className="w-4 h-4 text-primary-500 flex-shrink-0" />
           <p className="flex-1 text-xs text-primary-700 dark:text-primary-400">
             <span className="font-medium">Conversation restaurée</span>
@@ -176,7 +176,7 @@ export function ChatWindow() {
       )}
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 space-y-5">
         {messages.map((msg: Message, index: number) => {
           const isFirstRestored = index === 1 && restoredMessageCount > 0 && historyRestored
 
@@ -246,11 +246,13 @@ export function ChatWindow() {
       </div>
 
       {/* Input */}
-            <InputBar
+      <div className="flex-shrink-0">
+        <InputBar
               onSendText={handleSendText}
               onSendVoice={handleSendVoice}
-        disabled={isLoading}
-      />
+          disabled={isLoading}
+        />
+      </div>
 
       {/* SUS Modal */}
       <SUSModal open={susOpen} onClose={() => setSusOpen(false)} sessionId={sessionId} />
