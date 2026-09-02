@@ -57,10 +57,10 @@ export function ChatPage() {
             </div>
             <h2 className="font-bold text-lg leading-tight mb-1">ESPA Antsiranana</h2>
             <p className="text-primary-200 text-sm leading-relaxed">
-              École Supérieure Polytechnique d'Antsiranana — Université d'Antsiranana
+              École Supérieure Polytechnique d'Antsiranana 
             </p>
             <div className="mt-3 pt-3 border-t border-white/20">
-              <p className="text-xs text-primary-200">50<sup>ème</sup> anniversaire 2025-2026</p>
+              <p className="text-xs text-primary-200">Fête son 50<sup>ème</sup> anniversaire </p>
             </div>
           </div>
 
@@ -99,7 +99,7 @@ export function ChatPage() {
       {/* Footer */}
       <footer className="border-t border-neutral-200 dark:border-neutral-800 py-4 px-4">
         <p className="text-center text-xs text-neutral-400 dark:text-neutral-600">
-          UniBot ESPA — PFE STIC 2025-2026 | Université d'Antsiranana, Madagascar
+          UniBot ESPA — PFA STIC 2025-2026 | Université d'Antsiranana, Madagascar
         </p>
       </footer>
     </div>

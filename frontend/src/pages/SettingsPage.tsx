@@ -152,56 +152,6 @@ export function SettingsPage() {
         </Card>
       )}
 
-      {/* LLM Settings */}
-      {activeSection === 'llm' && (
-        <Card>
-          <h2 className="font-semibold text-neutral-900 dark:text-white mb-1">Configuration LLM</h2>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-5">
-            Choisissez le fournisseur et paramétrez le modèle de langage.
-          </p>
-          <div className="space-y-4">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Fournisseur LLM</label>
-              <select
-                value={settings.llm_provider}
-                onChange={e => setSettings(p => ({ ...p, llm_provider: e.target.value }))}
-                className="h-10 px-3.5 rounded-xl border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-              >
-                <option value="openai">OpenAI (en ligne)</option>
-                <option value="ollama">Ollama — Mistral 7B (hors-ligne)</option>
-              </select>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Input
-                label="Modèle"
-                value={settings.llm_model}
-                onChange={e => setSettings(p => ({ ...p, llm_model: e.target.value }))}
-                hint="Ex: gpt-4o-mini, gpt-4o, mistral:7b"
-              />
-              <Input
-                label="Max tokens"
-                type="number"
-                min={100}
-                max={4000}
-                value={settings.max_tokens}
-                onChange={e => setSettings(p => ({ ...p, max_tokens: +e.target.value }))}
-                hint="Longueur maximale de la réponse"
-              />
-              <Input
-                label="Température"
-                type="number"
-                min={0}
-                max={2}
-                step={0.1}
-                value={settings.temperature}
-                onChange={e => setSettings(p => ({ ...p, temperature: +e.target.value }))}
-                hint="0.0 = déterministe, 1.0 = créatif (0.2 recommandé)"
-              />
-            </div>
-          </div>
-        </Card>
-      )}
-
       {/* Notifications */}
       {activeSection === 'notifications' && (
         <Card>

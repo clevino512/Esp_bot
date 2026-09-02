@@ -109,7 +109,7 @@ export function LoginPage() {
           </div>
 
           <p className="text-center mt-4 text-sm text-neutral-500 dark:text-neutral-400">
-            Pas encore de compte ?{' '}
+            Vous avez un problème ?{' '}
             <span className="text-primary-600 dark:text-primary-400">
               Contactez votre administrateur système.
             </span>

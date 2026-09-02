@@ -148,8 +148,7 @@ export function ChatWindow() {
               title="Évaluer UniBot"
               className="gap-1.5"
             >
-              <Star className="w-3.5 h-3.5 text-amber-500" />
-              <span className="hidden sm:inline">Évaluer</span>
+              <Star className="w-5 h5 text-amber-500" />
             </Button>
           )}
           <Button
@@ -159,8 +158,7 @@ export function ChatWindow() {
             title="Nouvelle conversation"
             className="gap-1.5"
           >
-            <MessageSquarePlus className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Nouvelle conversation</span>
+            <MessageSquarePlus className="w-5 h-5" />
           </Button>
         </div>
       </div>
