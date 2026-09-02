@@ -53,7 +53,11 @@ export async function synthesizeSpeech(text: string, language = 'fr'): Promise<B
 export async function voiceChat(
   audioBlob: Blob,
   sessionId?: string,
-  language = 'fr'
+  language = 'fr',
+  studentVerification?: {
+    fullName: string
+    studentIdentifier: string
+  }
 ): Promise<{
   transcription: { text: string; confidence: number }
   response: {
@@ -74,6 +78,10 @@ export async function voiceChat(
   formData.append('language', language)
   if (sessionId) {
     formData.append('session_id', sessionId)
+  }
+  if (studentVerification) {
+    formData.append('student_full_name', studentVerification.fullName)
+    formData.append('student_identifier', studentVerification.studentIdentifier)
   }
 
   const response = await api.post<{

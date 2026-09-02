@@ -34,6 +34,10 @@ export interface ChatRequest {
   sessionId?: string
   mode?: MessageMode
   history?: Array<{ role: string; content: string }>
+  studentVerification?: {
+    fullName: string
+    studentIdentifier: string
+  }
 }
 
 export interface ChatResponse {
@@ -80,6 +84,15 @@ export interface KnowledgeDocument {
   size?: number
   description?: string
   tags?: string[]
+}
+
+export interface StudentAccess {
+  id: number
+  fullName: string
+  maskedIdentifier: string
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
 }
 
 export interface DocumentChunk {

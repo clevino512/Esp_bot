@@ -18,6 +18,12 @@ from .document import (
 )
 from .admin import DashboardStats, ConversationLog, FallbackQuestion
 from .settings import SettingsSchema
+from .student import (
+    StudentAccessCreate,
+    StudentAccessUpdate,
+    StudentAccessResponse,
+    StudentVerification,
+)
 
 __all__ = [
     # Base
@@ -50,4 +56,9 @@ __all__ = [
     "FallbackQuestion",
     # Settings
     "SettingsSchema",
+    # Student access
+    "StudentAccessCreate",
+    "StudentAccessUpdate",
+    "StudentAccessResponse",
+    "StudentVerification",
 ]

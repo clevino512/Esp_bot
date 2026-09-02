@@ -38,6 +38,19 @@ class User(Base):
     documents     = relationship("Document", back_populates="uploaded_by", lazy="dynamic")
 
 
+class StudentAccess(Base):
+    __tablename__ = "student_access"
+
+    id                    = Column(Integer, primary_key=True, index=True)
+    full_name             = Column(String(120), nullable=False)
+    full_name_normalized  = Column(String(120), nullable=False, index=True)
+    identifier_digest     = Column(String(64), unique=True, nullable=False, index=True)
+    masked_identifier     = Column(String(64), nullable=False)
+    is_active             = Column(Boolean, default=True, nullable=False)
+    created_at            = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at            = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
 class Document(Base):
     __tablename__ = "documents"
 

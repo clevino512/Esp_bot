@@ -1,5 +1,4 @@
-import { BookOpen, FileText } from 'lucide-react'
-import { clsx } from 'clsx'
+import { BookOpen } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
 import { Badge } from '@/components/ui/Badge'
 import type { Source } from '@/types'
@@ -29,16 +28,26 @@ export function SourceDetailModal({ source, onClose }: SourceDetailModalProps) {
   const pct   = Math.round(source.relevanceScore * 100)
   const text  = source.content || source.excerpt || ''
 
-  const barColor =
-    pct >= 80 ? 'bg-success-500' :
-    pct >= 60 ? 'bg-primary-500' :
-    'bg-warning-500'
-
   const category = source.category ? CATEGORY_LABELS[source.category] || source.category : null
 
   return (
     <Modal open={!!source} onClose={onClose} title="Source citée" size="md">
       <div className="space-y-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-neutral-900 dark:text-white">
+              {title}
+            </p>
+            {category && (
+              <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                {category}
+              </p>
+            )}
+          </div>
+          <Badge variant={pct >= 80 ? 'success' : pct >= 60 ? 'primary' : 'warning'}>
+            Pertinence {pct}%
+          </Badge>
+        </div>
 
       {/* Chunk content */}
         <div>

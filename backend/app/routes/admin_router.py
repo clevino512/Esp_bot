@@ -11,6 +11,12 @@ from app.models.document import DocumentCreate, DocumentUpdate, DocumentResponse
 from app.models.admin import DashboardStats, ConversationLog, FallbackQuestion
 from app.models.sus import SUSStats, SUSDistributionBucket, SUSRecentScore
 from app.models.base import BaseResponse
+from app.models.student import (
+    StudentAccessCreate,
+    StudentAccessUpdate,
+    StudentAccessResponse,
+)
+from app.services.student_service import StudentService
 from app.config.constants import DocumentCategory
 
 SUS_STORE_PATH = os.path.join(os.path.dirname(__file__), "../../data/sus_responses.json")
@@ -24,6 +30,63 @@ def _load_sus_responses() -> list[dict]:
         return []
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
+
+
+@router.get("/students", response_model=list[StudentAccessResponse])
+async def list_students(
+    db: DatabaseDep,
+    current_user = Depends(get_current_admin),
+):
+    return await StudentService(db).list_students()
+
+
+@router.post(
+    "/students",
+    response_model=StudentAccessResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_student(
+    data: StudentAccessCreate,
+    db: DatabaseDep,
+    current_user = Depends(get_current_admin),
+):
+    try:
+        return await StudentService(db).create_student(data)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(exc),
+        ) from exc
+
+
+@router.patch("/students/{student_id}", response_model=StudentAccessResponse)
+async def update_student(
+    student_id: int,
+    data: StudentAccessUpdate,
+    db: DatabaseDep,
+    current_user = Depends(get_current_admin),
+):
+    student = await StudentService(db).set_active(student_id, data.is_active)
+    if not student:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Étudiant non trouvé",
+        )
+    return student
+
+
+@router.delete("/students/{student_id}", response_model=BaseResponse)
+async def delete_student(
+    student_id: int,
+    db: DatabaseDep,
+    current_user = Depends(get_current_admin),
+):
+    if not await StudentService(db).delete_student(student_id):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Étudiant non trouvé",
+        )
+    return BaseResponse(success=True, message="Accès étudiant supprimé")
 
 
 @router.get("/dashboard", response_model=DashboardStats)

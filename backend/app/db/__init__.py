@@ -1,5 +1,5 @@
 from .session import get_db, engine, async_session
-from .models import Base, User, Document, DocumentChunk, Conversation, Message
+from .models import Base, User, StudentAccess, Document, DocumentChunk, Conversation, Message
 
 __all__ = [
     "get_db",
@@ -7,6 +7,7 @@ __all__ = [
     "async_session",
     "Base",
     "User",
+    "StudentAccess",
     "Document",
     "DocumentChunk",
     "Conversation",

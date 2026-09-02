@@ -8,6 +8,7 @@ from app.voice.asr import ASREngine
 from app.voice.tts import TTSEngine
 from app.models.voice import VoiceTranscriptionResponse
 from app.models.base import BaseResponse
+from app.models.student import StudentVerification
 
 router = APIRouter(prefix="/voice", tags=["Voice"])
 
@@ -76,6 +77,8 @@ async def voice_chat(
     audio: UploadFile = File(...),
     session_id: str | None = Form(None),
     language: str = Form("fr"),
+    student_full_name: str | None = Form(None),
+    student_identifier: str | None = Form(None),
     current_user: OptionalUserDep = None,
 ):
     from app.services.chat_service import ChatService
@@ -92,10 +95,24 @@ async def voice_chat(
         )
 
     chat_service = ChatService(db)
-    response = await chat_service.process_message(
-        user_message=transcription["text"],
-        session_id=session_id,
-    )
+    try:
+        response = await chat_service.process_message(
+            user_message=transcription["text"],
+            session_id=session_id,
+            student_verification=(
+                StudentVerification(
+                    full_name=student_full_name,
+                    student_identifier=student_identifier,
+                )
+                if student_full_name and student_identifier
+                else None
+            ),
+        )
+    except PermissionError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(exc),
+        ) from exc
 
     return {
         "transcription": {

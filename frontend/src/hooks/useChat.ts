@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import toast from 'react-hot-toast'
 import type { Message } from '@/types'
+import type { ChatRequest } from '@/types'
 import {
   sendMessage,
   createUserMessage,
@@ -92,7 +93,10 @@ export function useChat() {
   )
 
   const sendTextMessage = useCallback(
-    async (content: string) => {
+    async (
+      content: string,
+      studentVerification?: ChatRequest['studentVerification']
+    ) => {
       if (!content.trim() || isLoading) return
 
       const userMsg = createUserMessage(content.trim(), 'text')
@@ -122,6 +126,7 @@ export function useChat() {
           sessionId: sessionId.current,
           mode: 'text',
           history: historySnapshot,
+          studentVerification,
         })
         setMessages(prev => prev.filter(m => m.id !== typingId))
         addMessage(createAssistantMessage(response, 'text'))
@@ -153,11 +158,14 @@ export function useChat() {
         setIsLoading(false)
       }
     },
-    [isLoading, addMessage]
+    [isLoading, addMessage, buildHistory]
   )
 
   const sendVoiceMessage = useCallback(
-    async (transcript: string) => {
+    async (
+      transcript: string,
+      studentVerification?: ChatRequest['studentVerification']
+    ) => {
       if (!transcript.trim() || isLoading) return
 
       const userMsg = createUserMessage(transcript.trim(), 'voice')
@@ -185,6 +193,7 @@ export function useChat() {
           sessionId: sessionId.current,
           mode: 'voice',
           history: historySnapshot,
+          studentVerification,
         })
         setMessages(prev => prev.filter(m => m.id !== typingId))
         addMessage(createAssistantMessage(response, 'voice'))
@@ -198,7 +207,7 @@ export function useChat() {
         setIsLoading(false)
       }
     },
-    [isLoading, addMessage, buildHistory, messages]
+    [isLoading, addMessage, buildHistory]
   )
 
   const handleFeedback = useCallback(

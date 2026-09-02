@@ -13,6 +13,8 @@ from app.config.constants import FeedbackType, MAX_MESSAGE_LENGTH
 from app.core.prompts import PromptTemplates
 from app.repositories.conversation_repository import ConversationRepository
 from app.models.chat import Source, ChatResponse, Message
+from app.models.student import StudentVerification
+from app.services.student_service import StudentService
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
@@ -47,7 +49,16 @@ class ChatService:
         user_message: str,
         session_id: str | None = None,
         history: list[dict[str, str]] | None = None,
+        student_verification: StudentVerification | None = None,
     ) -> ChatResponse:
+        if self.is_transcript_request(user_message):
+            if not student_verification or not await StudentService(self.db).verify(
+                student_verification
+            ):
+                raise PermissionError(
+                    "Vérification étudiant requise ou informations incorrectes"
+                )
+
         if not session_id:
             session_id = str(uuid.uuid4())
 
@@ -139,6 +150,23 @@ class ChatService:
             is_fallback=is_fallback,
             created_at=assistant_message.created_at,
         )
+
+    @staticmethod
+    def is_transcript_request(user_message: str) -> bool:
+        normalized = user_message.casefold()
+        terms = (
+            "relevé de notes",
+            "releve de notes",
+            "relevé des notes",
+            "releve des notes",
+            "bulletin de notes",
+            "mes notes",
+            "mes résultats",
+            "mes resultats",
+            "notes personnelles",
+            "notes du semestre",
+        )
+        return any(term in normalized for term in terms)
 
     async def get_history(self, session_id: str) -> list[Message]:
         conversation = await self.conversation_repo.get_by_session_id(session_id)

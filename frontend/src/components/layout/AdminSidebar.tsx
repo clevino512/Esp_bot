@@ -1,5 +1,5 @@
 import { NavLink, Link } from 'react-router-dom'
-import { GraduationCap, LayoutDashboard, FileText, MessageSquare, ChartBar as BarChart2, Settings, LogOut, X, ChevronRight, Star, MessageSquareQuote } from 'lucide-react'
+import { GraduationCap, LayoutDashboard, FileText, MessageSquare, ChartBar as BarChart2, Settings, LogOut, X, ChevronRight, MessageSquareQuote, UserRoundCheck } from 'lucide-react'
 import { clsx } from 'clsx'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/Button'
@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 const navItems = [
   { to: '/admin', icon: LayoutDashboard, label: 'Tableau de bord', end: true },
   { to: '/admin/documents', icon: FileText, label: 'Documents' },
+  { to: '/admin/students', icon: UserRoundCheck, label: 'Étudiants autorisés' },
   { to: '/admin/logs', icon: MessageSquare, label: 'Conversations' },
   { to: '/admin/stats', icon: BarChart2, label: 'Statistiques' },
   // { to: '/admin/sus', icon: Star, label: 'Évaluation SUS' },

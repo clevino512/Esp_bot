@@ -46,8 +46,14 @@ async def send_message(
             user_message=request.message,
             session_id=request.session_id,
             history=request.history,
+            student_verification=request.student_verification,
         )
         return response
+    except PermissionError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(exc),
+        ) from exc
     except Exception as exc:
         logger.exception("Chat message processing failed")
         raise HTTPException(

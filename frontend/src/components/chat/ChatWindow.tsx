@@ -10,6 +10,7 @@ import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { useChat } from '@/hooks/useChat'
 import type { Message } from '@/types'
+import { TranscriptVerificationModal } from './TranscriptVerificationModal'
 
 const SUGGESTED_QUESTIONS = [
   "Quelles sont les dates d'inscription ?",
@@ -24,6 +25,22 @@ function formatSessionDate(date: Date): string {
   if (isToday(date)) return `aujourd'hui à ${format(date, 'HH:mm', { locale: fr })}`
   if (isYesterday(date)) return `hier à ${format(date, 'HH:mm', { locale: fr })}`
   return format(date, "EEEE d MMMM 'à' HH:mm", { locale: fr })
+}
+
+function isTranscriptRequest(message: string): boolean {
+  const normalized = message.toLocaleLowerCase()
+  return [
+    'relevé de notes',
+    'releve de notes',
+    'relevé des notes',
+    'releve des notes',
+    'bulletin de notes',
+    'mes notes',
+    'mes résultats',
+    'mes resultats',
+    'notes personnelles',
+    'notes du semestre',
+  ].some(term => normalized.includes(term))
 }
 
 export function ChatWindow() {
@@ -47,6 +64,10 @@ export function ChatWindow() {
   const [susOpen, setSusOpen] = useState(false)
   const [newConvOpen, setNewConvOpen] = useState(false)
   const [bannerDismissed, setBannerDismissed] = useState(false)
+  const [pendingTranscriptMessage, setPendingTranscriptMessage] = useState<{
+    content: string
+    mode: 'text' | 'voice'
+  } | null>(null)
 
   const showRestoredBanner =
     historyRestored && restoredMessageCount > 0 && !bannerDismissed
@@ -59,6 +80,38 @@ export function ChatWindow() {
     clearMessages()
     setNewConvOpen(false)
     setBannerDismissed(false)
+  }
+
+  function handleSendText(content: string) {
+    if (isTranscriptRequest(content)) {
+      setPendingTranscriptMessage({ content, mode: 'text' })
+      return
+    }
+    void sendTextMessage(content)
+  }
+
+  function handleSendVoice(content: string) {
+    if (isTranscriptRequest(content)) {
+      setPendingTranscriptMessage({ content, mode: 'voice' })
+      return
+    }
+    void sendVoiceMessage(content)
+  }
+
+  function submitTranscriptVerification(
+    fullName: string,
+    studentIdentifier: string
+  ) {
+    const pending = pendingTranscriptMessage
+    setPendingTranscriptMessage(null)
+    if (!pending) return
+
+    const verification = { fullName, studentIdentifier }
+    if (pending.mode === 'voice') {
+      void sendVoiceMessage(pending.content, verification)
+    } else {
+      void sendTextMessage(pending.content, verification)
+    }
   }
 
   return (
@@ -193,9 +246,9 @@ export function ChatWindow() {
       </div>
 
       {/* Input */}
-      <InputBar
-        onSendText={sendTextMessage}
-        onSendVoice={sendVoiceMessage}
+            <InputBar
+              onSendText={handleSendText}
+              onSendVoice={handleSendVoice}
         disabled={isLoading}
       />
 
@@ -237,6 +290,11 @@ export function ChatWindow() {
           </Button>
         </div>
       </Modal>
+      <TranscriptVerificationModal
+        open={pendingTranscriptMessage !== null}
+        onClose={() => setPendingTranscriptMessage(null)}
+        onSubmit={submitTranscriptVerification}
+      />
     </div>
   )
 }

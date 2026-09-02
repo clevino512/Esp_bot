@@ -11,10 +11,12 @@ import { TestimonialsPanel } from '@/components/admin/TestimonialsPanel'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { Button } from '@/components/ui/Button'
 import { SettingsPage } from './SettingsPage'
+import { StudentAccessManager } from '@/components/admin/StudentAccessManager'
 
 const PAGE_TITLES: Record<string, string> = {
   '': 'Tableau de bord',
   'documents': 'Gestion des documents',
+  'students': 'Étudiants autorisés',
   'logs': 'Conversations',
   'stats': 'Statistiques',
   'sus': 'Évaluation SUS',
@@ -56,6 +58,7 @@ export function AdminPage() {
           <Routes>
             <Route index element={<AdminDashboard />} />
             <Route path="documents" element={<DocumentManager />} />
+            <Route path="students" element={<StudentAccessManager />} />
             <Route path="logs" element={<LogsViewer />} />
             <Route path="stats" element={<StatsPanel />} />
             <Route path="sus" element={<SUSPanel />} />

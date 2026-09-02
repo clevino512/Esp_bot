@@ -22,6 +22,12 @@ export async function sendMessage(request: ChatRequest): Promise<ChatResponse> {
     message: request.message,
     session_id: request.sessionId || undefined,
     history: request.history || undefined,
+    student_verification: request.studentVerification
+      ? {
+          full_name: request.studentVerification.fullName,
+          student_identifier: request.studentVerification.studentIdentifier,
+        }
+      : undefined,
   })
 
   const data = response.data

@@ -1,5 +1,6 @@
 import api from '@/lib/api'
 import type { KnowledgeDocument, ConversationLog, DashboardStats, AdminUser, AuthTokens } from '@/types'
+import type { StudentAccess } from '@/types'
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 
@@ -277,4 +278,56 @@ export async function getTopQuestions(days = 7, limit = 10): Promise<{ question:
     params: { days, limit },
   })
   return response.data
+}
+
+// ── Student access registry ──────────────────────────────────────────────────
+
+interface BackendStudentAccess {
+  id: number
+  full_name: string
+  masked_identifier: string
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+function mapStudentAccess(student: BackendStudentAccess): StudentAccess {
+  return {
+    id: student.id,
+    fullName: student.full_name,
+    maskedIdentifier: student.masked_identifier,
+    isActive: student.is_active,
+    createdAt: student.created_at,
+    updatedAt: student.updated_at,
+  }
+}
+
+export async function getStudentAccessList(): Promise<StudentAccess[]> {
+  const response = await api.get<BackendStudentAccess[]>('/admin/students')
+  return response.data.map(mapStudentAccess)
+}
+
+export async function createStudentAccess(
+  fullName: string,
+  studentIdentifier: string
+): Promise<StudentAccess> {
+  const response = await api.post<BackendStudentAccess>('/admin/students', {
+    full_name: fullName,
+    student_identifier: studentIdentifier,
+  })
+  return mapStudentAccess(response.data)
+}
+
+export async function setStudentAccessActive(
+  id: number,
+  isActive: boolean
+): Promise<StudentAccess> {
+  const response = await api.patch<BackendStudentAccess>(`/admin/students/${id}`, {
+    is_active: isActive,
+  })
+  return mapStudentAccess(response.data)
+}
+
+export async function deleteStudentAccess(id: number): Promise<void> {
+  await api.delete(`/admin/students/${id}`)
 }

@@ -3,6 +3,7 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 from app.config.constants import FeedbackType, MAX_MESSAGE_LENGTH
+from app.models.student import StudentVerification
 
 
 class Source(BaseModel):
@@ -31,6 +32,7 @@ class ChatRequest(BaseModel):
     message: str = Field(..., min_length=1, max_length=MAX_MESSAGE_LENGTH)
     session_id: str | None = None
     history: list[dict[str, Any]] | None = None
+    student_verification: StudentVerification | None = None
 
 
 class ChatResponse(BaseModel):

@@ -95,9 +95,22 @@ function SourceCard({
 
           {/* Title */}
           <div className="flex items-center justify-between gap-2 mb-1.5">
-            <p className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 truncate leading-tight">
-              {title}
-            </p>
+            <div className="min-w-0">
+              <p className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 truncate leading-tight">
+                {title}
+              </p>
+              <div className="mt-1 flex items-center gap-2">
+                <div className="h-1.5 w-16 overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-700">
+                  <div
+                    className={clsx('h-full rounded-full', barColor)}
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+                <span className="text-[10px] font-medium text-neutral-400 dark:text-neutral-500">
+                  Pertinence {pct}%
+                </span>
+              </div>
+            </div>
 
             <div className="flex items-center gap-1 flex-shrink-0">
               {source.page && (
