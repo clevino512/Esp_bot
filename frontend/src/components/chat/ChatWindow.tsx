@@ -57,7 +57,8 @@ export function ChatWindow() {
     clearMessages,
   } = useChat()
 
-  const bottomRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
+  const hasScrolledOnMountRef = useRef(false)
   const hasOnlyWelcome = messages.length === 1
   const hasEnoughMessages = messages.length >= 5
   const susAlreadySubmitted = localStorage.getItem(SUS_SUBMITTED_KEY) === 'true'
@@ -73,7 +74,20 @@ export function ChatWindow() {
     historyRestored && restoredMessageCount > 0 && !bannerDismissed
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const container = messagesContainerRef.current
+    if (!container) return
+
+    if (!hasScrolledOnMountRef.current) {
+      hasScrolledOnMountRef.current = true
+      return
+    }
+
+    if (messages.length === 0) return
+
+    const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 120
+    if (isNearBottom) {
+      container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' })
+    }
   }, [messages])
 
   function handleNewConversation() {
@@ -115,7 +129,7 @@ export function ChatWindow() {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full min-h-0">
       {/* Toolbar */}
       <div className="flex items-center justify-between px-5 py-3 border-b border-neutral-200 dark:border-neutral-800 gap-2">
         <div className="flex items-center gap-2 min-w-0">
@@ -176,7 +190,10 @@ export function ChatWindow() {
       )}
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5">
+      <div
+        ref={messagesContainerRef}
+        className="flex-1 min-h-0 overflow-y-auto px-5 py-5 space-y-5 scroll-smooth"
+      >
         {messages.map((msg: Message, index: number) => {
           const isFirstRestored = index === 1 && restoredMessageCount > 0 && historyRestored
 
@@ -242,15 +259,16 @@ export function ChatWindow() {
           </div>
         )}
 
-        <div ref={bottomRef} />
       </div>
 
       {/* Input */}
-            <InputBar
-              onSendText={handleSendText}
-              onSendVoice={handleSendVoice}
-        disabled={isLoading}
-      />
+      <div className="flex-shrink-0">
+        <InputBar
+          onSendText={handleSendText}
+          onSendVoice={handleSendVoice}
+          disabled={isLoading}
+        />
+      </div>
 
       {/* SUS Modal */}
       <SUSModal open={susOpen} onClose={() => setSusOpen(false)} sessionId={sessionId} />
