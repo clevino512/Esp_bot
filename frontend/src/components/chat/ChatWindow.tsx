@@ -57,7 +57,7 @@ export function ChatWindow() {
     clearMessages,
   } = useChat()
 
-  const bottomRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
   const hasOnlyWelcome = messages.length === 1
   const hasEnoughMessages = messages.length >= 5
   const susAlreadySubmitted = localStorage.getItem(SUS_SUBMITTED_KEY) === 'true'
@@ -73,7 +73,13 @@ export function ChatWindow() {
     historyRestored && restoredMessageCount > 0 && !bannerDismissed
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const container = messagesContainerRef.current
+    if (!container) return
+
+    container.scrollTo({
+      top: container.scrollHeight,
+      behavior: 'smooth',
+    })
   }, [messages])
 
   function handleNewConversation() {
@@ -176,7 +182,10 @@ export function ChatWindow() {
       )}
 
       {/* Messages */}
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 space-y-5">
+      <div
+        ref={messagesContainerRef}
+        className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 space-y-5"
+      >
         {messages.map((msg: Message, index: number) => {
           const isFirstRestored = index === 1 && restoredMessageCount > 0 && historyRestored
 
@@ -242,7 +251,6 @@ export function ChatWindow() {
           </div>
         )}
 
-        <div ref={bottomRef} />
       </div>
 
       {/* Input */}

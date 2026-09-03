@@ -47,10 +47,10 @@ export function ChatPage() {
       </header>
 
       {/* Main */}
-      <main className="flex-1 min-h-0 max-w-screen-lg mx-auto w-full px-4 py-6 overflow-hidden">
-        <div className="flex h-full min-h-0 flex-col lg:flex-row items-stretch gap-6">
+      <main className="flex-1 h-full min-h-0 max-w-screen-lg mx-auto w-full px-4 py-6 overflow-hidden">
+        <div className="grid h-full min-h-0 grid-cols-1 lg:grid-cols-[18rem_minmax(0,1fr)] gap-6">
           {/* Sidebar info */}
-          <aside className="hidden lg:flex flex-col gap-5 w-72 flex-shrink-0">
+          <aside className="hidden lg:flex min-h-0 flex-col gap-5">
           {/* ESPA info card */}
           <div className="bg-gradient-to-br from-primary-700 to-primary-900 rounded-2xl p-5 text-white">
             <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center mb-3">
@@ -92,7 +92,7 @@ export function ChatPage() {
           </aside>
 
           {/* Chat */}
-          <div className="flex-1 min-w-0 min-h-0 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-card overflow-hidden flex flex-col">
+          <div className="min-w-0 min-h-0 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-card overflow-hidden flex flex-col">
             <ChatWindow />
           </div>
         </div>
