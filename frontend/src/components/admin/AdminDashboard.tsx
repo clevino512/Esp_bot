@@ -42,10 +42,10 @@ export function AdminDashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
-            Vue d'ensemble — 7 derniers jours
+             Vue d'ensemble
           </h2>
           <p className="text-sm text-neutral-500 dark:text-neutral-400">
-            Métriques en temps réel de l'assistant UniBot
+             Sessions totales enregistrées et métriques récentes de l'assistant UniBot
           </p>
         </div>
         <ReportExportButton />
@@ -54,20 +54,19 @@ export function AdminDashboard() {
       {/* Quick KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          label="Conversations"
+            label="Conversations totales"
           value={stats.totalConversations}
           icon={<MessageSquare className="w-5 h-5" />}
           color="blue"
         />
         <StatCard
-          label="Taux résolu"
+            label="Taux de satisfaction"
           value={
             stats.helpfulRate !== undefined
               ? `${Math.round(stats.helpfulRate * 100)}%`
               : 'N/A'
           }
           icon={<CheckCircle className="w-5 h-5" />}
-          change={{ value: 3, positive: true }}
           color="green"
         />
         <StatCard

@@ -120,9 +120,15 @@ class ConversationRepository:
         )
         total_conversations = total_result.scalar() or 0
 
+        all_conversations_result = await self.db.execute(
+            select(func.count(Conversation.id))
+        )
+        total_conversations_all_time = all_conversations_result.scalar() or 0
+
         fallback_result = await self.db.execute(
             select(func.count(Message.id)).where(
                 and_(
+                    Message.role == "assistant",
                     Message.is_fallback == True,
                     Message.created_at >= start_date,
                     Message.created_at <= end_date,
@@ -141,6 +147,18 @@ class ConversationRepository:
             )
         )
         helpful_count = helpful_result.scalar() or 0
+
+        not_helpful_result = await self.db.execute(
+            select(func.count(Message.id)).where(
+                and_(
+                    Message.role == "assistant",
+                    Message.feedback == FeedbackType.NOT_HELPFUL,
+                    Message.created_at >= start_date,
+                    Message.created_at <= end_date,
+                )
+            )
+        )
+        not_helpful_count = not_helpful_result.scalar() or 0
 
         total_messages_result = await self.db.execute(
             select(func.count(Message.id)).where(
@@ -189,9 +207,11 @@ class ConversationRepository:
 
         return {
             "total_conversations": total_conversations,
+            "total_conversations_all_time": total_conversations_all_time,
             "unique_users": unique_users,
             "fallback_count": fallback_count,
             "helpful_count": helpful_count,
+            "not_helpful_count": not_helpful_count,
             "total_messages": total_messages,
             "avg_confidence": float(avg_confidence),
             "avg_response_time_ms": float(avg_response_time),

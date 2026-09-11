@@ -29,20 +29,20 @@ class AdminService:
         stats = await self.conversation_repo.get_stats(start_date, end_date)
 
         doc_stats = await self.document_repo.get_total_chunks()
-        total_docs = await self.document_repo.count()
 
-        total_messages = stats.get("total_messages", 1)
+        total_messages = stats.get("total_messages", 0)
         fallback_rate = stats.get("fallback_count", 0) / max(total_messages, 1)
-        helpful_rate = stats.get("helpful_count", 0) / max(total_messages, 1)
+        feedback_count = stats.get("helpful_count", 0) + stats.get("not_helpful_count", 0)
+        helpful_rate = stats.get("helpful_count", 0) / max(feedback_count, 1)
 
         return DashboardStats(
-            total_conversations=stats.get("total_conversations", 0),
+            total_conversations=stats.get("total_conversations_all_time", 0),
             unique_users=stats.get("unique_users", 0),
             avg_response_time_ms=stats.get("avg_response_time_ms", 0.0),
             avg_confidence_score=stats.get("avg_confidence", 0.0),
             fallback_rate=fallback_rate,
             helpful_rate=helpful_rate,
-            active_documents=total_docs,
+            active_documents=await self.document_repo.count(is_active=True),
             total_chunks=doc_stats,
             period_start=start_date,
             period_end=end_date,

@@ -57,7 +57,7 @@ export function StatsPanel() {
           color="blue"
         />
         <StatCard
-          label="Chunks vectorises"
+           label="Chunks vectorisés"
           value={stats.totalChunks}
           icon={<Hash className="w-5 h-5" />}
           color="green"
