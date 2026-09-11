@@ -45,6 +45,7 @@ class DocumentService:
                 title=title,
                 content=content,
                 category=category,
+                document_repo=self.doc_repo,
             )
             document = await self.doc_repo.update(document, chunk_count=chunk_count)
 
@@ -92,6 +93,7 @@ class DocumentService:
             content=doc_data.get("content", ""),
             category=category,
             filename=filename,
+            document_repo=self.doc_repo,
         )
         document = await self.doc_repo.update(document, chunk_count=chunk_count)
 
@@ -173,6 +175,7 @@ class DocumentService:
             title=document.title,
             content=content,
             category=document.category,
+            document_repo=self.doc_repo,
         )
 
         await self.doc_repo.update(document, chunk_count=chunk_count)

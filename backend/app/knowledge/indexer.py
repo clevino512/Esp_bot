@@ -9,6 +9,7 @@ from app.core.embedder import Embedder
 from app.core.retriever import Retriever
 from app.knowledge.loader import DocumentLoader
 from app.knowledge.preprocessor import TextPreprocessor
+from app.repositories.document_repository import DocumentRepository
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
@@ -32,6 +33,7 @@ class KnowledgeIndexer:
         category: DocumentCategory = DocumentCategory.GENERAL,
         filename: str | None = None,
         metadata: dict[str, Any] | None = None,
+        document_repo: DocumentRepository | None = None,
     ) -> int:
         start_time = time.time()
         chunks = self.preprocessor.chunk(
@@ -46,6 +48,8 @@ class KnowledgeIndexer:
         )
 
         if not chunks:
+            if document_repo:
+                await document_repo.replace_chunks(document_id, [])
             logger.warning(f"No chunks created for document {document_id}")
             return 0
 
@@ -58,6 +62,9 @@ class KnowledgeIndexer:
             documents=chunk_texts,
             metadatas=chunk_metadatas,
         )
+
+        if document_repo:
+            await document_repo.replace_chunks(document_id, chunks)
 
         elapsed = time.time() - start_time
         logger.info(
@@ -97,6 +104,7 @@ class KnowledgeIndexer:
         content: str,
         title: str,
         category: DocumentCategory = DocumentCategory.GENERAL,
+        document_repo: DocumentRepository | None = None,
         **kwargs: Any,
     ) -> int:
         self.remove_document(document_id)
@@ -105,6 +113,7 @@ class KnowledgeIndexer:
             title=title,
             content=content,
             category=category,
+            document_repo=document_repo,
             **kwargs,
         )
 

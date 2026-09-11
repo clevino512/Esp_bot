@@ -1,4 +1,6 @@
+import json
 from typing import Any
+
 from sqlalchemy import select, func, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -102,12 +104,35 @@ class DocumentRepository:
             chunk_index=chunk_index,
             content=content,
             embedding_id=embedding_id,
-            chunk_metadata=metadata,
+            chunk_metadata=chunk_metadata,
         )
         self.db.add(chunk)
         await self.db.flush()
         await self.db.refresh(chunk)
         return chunk
+
+    async def replace_chunks(
+        self,
+        document_id: int,
+        chunks: list[dict[str, Any]],
+    ) -> int:
+        """Replace the persisted chunks for a document after indexing."""
+        await self.delete_chunks(document_id)
+        await self.db.flush()
+
+        for index, chunk_data in enumerate(chunks):
+            metadata = chunk_data.get("metadata") or {}
+            self.db.add(
+                DocumentChunk(
+                    document_id=document_id,
+                    chunk_index=index,
+                    content=chunk_data.get("content", ""),
+                    chunk_metadata=json.dumps(metadata, ensure_ascii=False),
+                )
+            )
+
+        await self.db.flush()
+        return len(chunks)
 
     async def get_chunks(self, document_id: int) -> list[DocumentChunk]:
         result = await self.db.execute(
@@ -137,5 +162,10 @@ class DocumentRepository:
             await self.db.flush()
 
     async def get_total_chunks(self) -> int:
-        result = await self.db.execute(select(func.count(DocumentChunk.id)))
+        # Document.chunk_count is maintained when a document is indexed and
+        # also covers documents created before document_chunks persistence was
+        # added. It is the authoritative total for the admin statistics.
+        result = await self.db.execute(
+            select(func.coalesce(func.sum(Document.chunk_count), 0))
+        )
         return result.scalar() or 0
