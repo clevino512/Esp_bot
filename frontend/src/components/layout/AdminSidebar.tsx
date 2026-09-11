@@ -99,10 +99,12 @@ export function AdminSidebar({ open, onClose }: AdminSidebarProps) {
             variant="ghost"
             size="sm"
             onClick={logout}
-            className="w-full h-auto min-h-8 flex-col items-center justify-center gap-1 py-2 text-error-600 hover:bg-error-50 dark:text-error-400 dark:hover:bg-error-900/20"
+            className="w-full h-auto min-h-[4.25rem] px-3 py-2 text-error-600 hover:bg-error-50 dark:text-error-400 dark:hover:bg-error-900/20"
           >
-            <LogOut className="w-4 h-4" />
-            <span>Déconnexion</span>
+            <span className="flex w-full flex-col items-center justify-center gap-1 leading-tight">
+              <LogOut className="w-4 h-4" aria-hidden="true" />
+              <span>Déconnexion</span>
+            </span>
           </Button>
         </div>
       </aside>
