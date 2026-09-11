@@ -1,7 +1,12 @@
 import { useState } from 'react'
 import { FileDown, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { getDashboardStats, getFallbackQuestions, getLogs } from '@/services/adminService'
+import {
+  DASHBOARD_STATS_PERIOD_DAYS,
+  getDashboardStats,
+  getFallbackQuestions,
+  getLogs,
+} from '@/services/adminService'
 import { getSUSStats } from '@/services/susService'
 import { exportReportPDF } from '@/utils/exportUtils'
 
@@ -12,7 +17,7 @@ export function ReportExportButton() {
     setLoading(true)
     try {
       const [stats, susStats, logsData, fallbackQuestions] = await Promise.allSettled([
-        getDashboardStats(7),
+        getDashboardStats(DASHBOARD_STATS_PERIOD_DAYS),
         getSUSStats(),
         getLogs({ page: 1, pageSize: 100 }),
         getFallbackQuestions(30, 20),

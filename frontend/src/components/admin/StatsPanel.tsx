@@ -1,15 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
 import { MessageSquare, CircleCheck as CheckCircle, Clock, FileText, Hash, Target, Users, TriangleAlert as AlertTriangle } from 'lucide-react'
-import { getDashboardStats, getTopQuestions } from '@/services/adminService'
+import { getTopQuestions } from '@/services/adminService'
+import { useDashboardStats } from '@/hooks/useDashboardStats'
 import { StatCard, Card } from '@/components/ui/Card'
 import { PageSpinner } from '@/components/ui/Spinner'
 import { Badge } from '@/components/ui/Badge'
 
 export function StatsPanel() {
-  const { data: stats, isLoading } = useQuery({
-    queryKey: ['dashboard-stats'],
-    queryFn: () => getDashboardStats(7),
-  })
+  const { data: stats, isLoading } = useDashboardStats()
 
   const { data: topQuestions } = useQuery({
     queryKey: ['top-questions'],

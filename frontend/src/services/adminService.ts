@@ -239,6 +239,9 @@ export interface BackendDashboardStats {
   period_end: string
 }
 
+export const DASHBOARD_STATS_PERIOD_DAYS = 7
+export const DASHBOARD_STATS_QUERY_KEY = ['dashboard-stats', DASHBOARD_STATS_PERIOD_DAYS] as const
+
 export async function getDashboardStats(days = 7): Promise<DashboardStats> {
   const response = await api.get<BackendDashboardStats>('/admin/dashboard', {
     params: { days },

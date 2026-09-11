@@ -9,17 +9,15 @@ import {
 } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { getDashboardStats, getFallbackQuestions, getLogs } from '@/services/adminService'
+import { getFallbackQuestions, getLogs } from '@/services/adminService'
+import { useDashboardStats } from '@/hooks/useDashboardStats'
 import { Card, StatCard } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { PageSpinner } from '@/components/ui/Spinner'
 import { ReportExportButton } from '@/components/admin/ReportExportButton'
 
 export function AdminDashboard() {
-  const { data: stats, isLoading: statsLoading } = useQuery({
-    queryKey: ['dashboard-stats'],
-    queryFn: () => getDashboardStats(7),
-  })
+  const { data: stats, isLoading: statsLoading } = useDashboardStats()
 
   const { data: fallbackQuestions } = useQuery({
     queryKey: ['fallback-questions'],
