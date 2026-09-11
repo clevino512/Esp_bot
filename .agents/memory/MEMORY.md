@@ -4,3 +4,4 @@
 - [HMR hooks count](hmr-hooks-count.md) — ajouter des hooks dans un fichier utilisé via HMR nécessite un full restart workflow, pas juste HMR
 - [Secure transcript access](transcript-access.md) — les demandes personnelles de relevé doivent passer par le registre scolarité et une validation serveur à chaque requête
 - [Chat timestamp timezones](chat-timezones.md) — les dates UTC de l’API doivent porter leur fuseau avant l’affichage local du chat
+- [Tracked Vite cache](tracked-vite-cache.md) — le redémarrage du frontend peut modifier `node_modules/.vite/deps` suivi par Git ; restaurer ces fichiers avant de conclure
