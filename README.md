@@ -394,7 +394,7 @@ pip install -r requirements.txt
 docker compose up chromadb postgres redis -d
 
 #demarrer chroma manuellement 
-chroma run --path ./chroma_data --host 127.0.0.1 --port 8000
+chroma run --path ./chroma_data --host 127.0.0.1 --port 8001
 
 
 # Lancer le serveur de développement

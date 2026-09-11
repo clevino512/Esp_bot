@@ -1,0 +1,82 @@
+classDiagram
+
+    class User {
+        +Integer id
+        +String email
+        +String password_hash
+        +String full_name
+        +String role
+        +Boolean is_active
+        +DateTime created_at
+        +DateTime updated_at
+    }
+
+    class Document {
+        +Integer id
+        +String title
+        +String filename
+        +String file_path
+        +Integer file_size
+        +String mime_type
+        +String category
+        +Text content_raw
+        +Integer chunk_count
+        +Boolean is_active
+        +Integer uploaded_by_id
+        +DateTime created_at
+        +DateTime updated_at
+    }
+
+    class DocumentChunk {
+        +Integer id
+        +Integer document_id
+        +Integer chunk_index
+        +Text content
+        +String embedding_id
+        +String chunk_metadata
+        +DateTime created_at
+    }
+
+    class Conversation {
+        +Integer id
+        +String session_id
+        +Integer user_id
+        +String status
+        +String user_agent
+        +String ip_address
+        +DateTime created_at
+        +DateTime updated_at
+        +DateTime ended_at
+    }
+
+    class Message {
+        +Integer id
+        +Integer conversation_id
+        +String role
+        +Text content
+        +Text sources
+        +Float confidence
+        +Boolean is_fallback
+        +String feedback
+        +Integer response_time_ms
+        +DateTime created_at
+    }
+
+    class FeedbackLog {
+        +Integer id
+        +Integer message_id
+        +String feedback_type
+        +Text user_query
+        +Text bot_response
+        +DateTime created_at
+    }
+
+
+    User "0..1" --> "0..*" Conversation : possède
+    User "0..1" --> "0..*" Document : téléverse
+
+    Document "1" *-- "0..*" DocumentChunk : contient
+
+    Conversation "1" *-- "0..*" Message : contient
+
+    Message "1" --> "0..*" FeedbackLog : feedback

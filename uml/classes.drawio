@@ -1,0 +1,49 @@
+<mxfile host="65bd71144e">
+    <diagram name="Diagramme de classes" id="0">
+        <mxGraphModel dx="828" dy="513" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="User" value="User|id : Integer PK\nemail : String\npassword_hash : String\nfull_name : String\nrole : String\nis_active : Boolean" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fontFamily=Courier New;" parent="1" vertex="1">
+                    <mxGeometry x="70" y="60" width="250" height="170" as="geometry"/>
+                </mxCell>
+                <mxCell id="StudentAccess" value="StudentAccess|id : Integer PK\nfull_name : String\nfull_name_normalized : String\nidentifier_digest : String\nmasked_identifier : String\nis_active : Boolean" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fontFamily=Courier New;" parent="1" vertex="1">
+                    <mxGeometry x="70" y="300" width="250" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="Document" value="Document|id : Integer PK\ntitle : String\nfilename : String\ncategory : String\ncontent_raw : Text\nchunk_count : Integer\nuploaded_by_id : Integer FK" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fontFamily=Courier New;" parent="1" vertex="1">
+                    <mxGeometry x="390" y="40" width="290" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="DocumentChunk" value="DocumentChunk|id : Integer PK\ndocument_id : Integer FK\nchunk_index : Integer\ncontent : Text\nembedding_id : String\nchunk_metadata : String" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fontFamily=Courier New;" parent="1" vertex="1">
+                    <mxGeometry x="760" y="40" width="290" height="190" as="geometry"/>
+                </mxCell>
+                <mxCell id="Conversation" value="Conversation|id : Integer PK\nsession_id : String\nuser_id : Integer FK\nstatus : String\nuser_agent : String\nip_address : String" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fontFamily=Courier New;" parent="1" vertex="1">
+                    <mxGeometry x="390" y="330" width="290" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="Message" value="Message|id : Integer PK\nconversation_id : Integer FK\nrole : String\ncontent : Text\nsources : Text\nconfidence : Float\nis_fallback : Boolean\nfeedback : String\nresponse_time_ms : Integer" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fontFamily=Courier New;" parent="1" vertex="1">
+                    <mxGeometry x="760" y="300" width="300" height="230" as="geometry"/>
+                </mxCell>
+                <mxCell id="FeedbackLog" value="FeedbackLog|id : Integer PK\nmessage_id : Integer FK\nfeedback_type : String\nuser_query : Text\nbot_response : Text" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fontFamily=Courier New;" parent="1" vertex="1">
+                    <mxGeometry x="760" y="590" width="300" height="160" as="geometry"/>
+                </mxCell>
+                <mxCell id="Setting" value="Setting|id : Integer PK\ntop_k : Integer = 5\nmin_score : Float = 0.65\nfallback_threshold : Float = 0.40\nchunk_size : Integer = 500\nchunk_overlap : Integer = 50\nllm_provider : String\nllm_model : String\nmax_tokens : Integer\ntemperature : Float" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fontFamily=Courier New;" parent="1" vertex="1">
+                    <mxGeometry x="70" y="560" width="280" height="230" as="geometry"/>
+                </mxCell>
+                <mxCell id="rel0" value="1        0..*" style="endArrow=none;startArrow=none;html=1;" parent="1" source="User" target="Document" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="rel1" value="1        0..*" style="endArrow=none;startArrow=none;html=1;" parent="1" source="User" target="Conversation" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="rel2" value="1        0..*" style="endArrow=none;startArrow=none;html=1;" parent="1" source="Document" target="DocumentChunk" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="rel3" value="1        0..*" style="endArrow=none;startArrow=none;html=1;" parent="1" source="Conversation" target="Message" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="rel4" value="1        0..*" style="endArrow=none;startArrow=none;html=1;" parent="1" source="Message" target="FeedbackLog" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

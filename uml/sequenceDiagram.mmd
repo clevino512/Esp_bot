@@ -1,0 +1,58 @@
+sequenceDiagram
+
+    actor E as Étudiant
+    participant UI as Interface React
+    participant API as API FastAPI
+    participant CHAT as Service Chat
+    participant EMB as Embedder
+    participant RET as Retriever
+    participant CHROMA as ChromaDB
+    participant LLM as LLM
+    participant DB as PostgreSQL
+
+    E->>UI: Poser une question
+    UI->>API: Envoyer la requête
+    API->>CHAT: Traiter la question
+
+    CHAT->>DB: Rechercher ou créer la conversation
+    DB-->>CHAT: Conversation
+
+    CHAT->>EMB: Générer embedding(question)
+    EMB-->>CHAT: Vecteur de la question
+
+    CHAT->>RET: Rechercher les Top-k chunks
+    RET->>CHROMA: Recherche vectorielle
+    CHROMA-->>RET: Chunks + scores + métadonnées
+    RET-->>CHAT: Documents récupérés
+
+    CHAT->>CHAT: Vérifier la pertinence
+
+    alt Contexte suffisamment pertinent
+
+        CHAT->>CHAT: Construire le contexte documentaire
+
+        CHAT->>LLM: Prompt + question + contexte
+        LLM-->>CHAT: Réponse générée
+
+        CHAT->>CHAT: Post-traitement
+        CHAT->>CHAT: Associer les sources
+
+        CHAT->>DB: Enregistrer réponse, sources,<br/>confidence et response_time_ms
+        DB-->>CHAT: Message enregistré
+
+        CHAT-->>API: Réponse + sources
+        API-->>UI: JSON
+        UI-->>E: Afficher réponse + sources
+
+    else Pertinence insuffisante
+
+        CHAT->>CHAT: Déclencher le fallback
+
+        CHAT->>DB: Enregistrer le message<br/>is_fallback = true
+        DB-->>CHAT: Message enregistré
+
+        CHAT-->>API: Réponse de fallback
+        API-->>UI: JSON
+        UI-->>E: Information insuffisante
+
+    end

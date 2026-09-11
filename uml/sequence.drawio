@@ -1,0 +1,36 @@
+<mxfile host="app.diagrams.net" version="24.7.17" type="device">
+<diagram name="Séquence RAG">
+<mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+<root>
+<mxCell id="0"/>
+<mxCell id="1" parent="0"/>
+<mxCell id="stu" value="Étudiant" style="shape=umlLifeline;perimeter=lifelinePerimeter;html=1;container=1;" vertex="1" parent="1"><mxGeometry x="40" y="30" width="110" height="700" as="geometry"/></mxCell>
+<mxCell id="react" value="Interface React" style="shape=umlLifeline;perimeter=lifelinePerimeter;html=1;container=1;" vertex="1" parent="1"><mxGeometry x="190" y="30" width="110" height="700" as="geometry"/></mxCell>
+<mxCell id="api" value="API FastAPI" style="shape=umlLifeline;perimeter=lifelinePerimeter;html=1;container=1;" vertex="1" parent="1"><mxGeometry x="360" y="30" width="110" height="700" as="geometry"/></mxCell>
+<mxCell id="chat" value="Service Chat" style="shape=umlLifeline;perimeter=lifelinePerimeter;html=1;container=1;" vertex="1" parent="1"><mxGeometry x="530" y="30" width="110" height="700" as="geometry"/></mxCell>
+<mxCell id="emb" value="Embedder" style="shape=umlLifeline;perimeter=lifelinePerimeter;html=1;container=1;" vertex="1" parent="1"><mxGeometry x="700" y="30" width="110" height="700" as="geometry"/></mxCell>
+<mxCell id="ret" value="Retriever" style="shape=umlLifeline;perimeter=lifelinePerimeter;html=1;container=1;" vertex="1" parent="1"><mxGeometry x="870" y="30" width="110" height="700" as="geometry"/></mxCell>
+<mxCell id="chroma" value="ChromaDB" style="shape=umlLifeline;perimeter=lifelinePerimeter;html=1;container=1;" vertex="1" parent="1"><mxGeometry x="1040" y="30" width="110" height="700" as="geometry"/></mxCell>
+<mxCell id="llm" value="LLM" style="shape=umlLifeline;perimeter=lifelinePerimeter;html=1;container=1;" vertex="1" parent="1"><mxGeometry x="1210" y="30" width="110" height="700" as="geometry"/></mxCell>
+<mxCell id="db" value="PostgreSQL" style="shape=umlLifeline;perimeter=lifelinePerimeter;html=1;container=1;" vertex="1" parent="1"><mxGeometry x="1380" y="30" width="110" height="700" as="geometry"/></mxCell>
+<mxCell id="m1" value="Poser une question" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="stu" target="react"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="m2" value="Requête HTTP" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="react" target="api"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="m3" value="Traiter la question" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="api" target="chat"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="m4" value="Rechercher / créer Conversation" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="chat" target="db"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="m5" value="Générer embedding(question)" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="chat" target="emb"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="m6" value="Vecteur" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="emb" target="chat"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="m7" value="Rechercher Top-k" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="chat" target="ret"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="m8" value="Recherche vectorielle" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="ret" target="chroma"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="m9" value="chunks + scores + métadonnées" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="chroma" target="ret"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="m10" value="Contexte documentaire" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="ret" target="chat"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="m11" value="Question + contexte" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="chat" target="llm"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="m12" value="Réponse générée" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="llm" target="chat"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="m13" value="Enregistrer Message + sources + score" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="chat" target="db"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="m14" value="Réponse + sources" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="chat" target="api"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="m15" value="JSON" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="api" target="react"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="m16" value="Afficher réponse + sources" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="react" target="stu"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="note1" value="ALT : si pertinence insuffisante → fallback, enregistrement is_fallback = true, puis réponse d&#x27;incertitude" style="shape=note;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="500" y="475" width="520" height="55" as="geometry"/></mxCell>
+</root>
+</mxGraphModel>
+</diagram>
+</mxfile>
