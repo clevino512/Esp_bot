@@ -58,7 +58,7 @@ export function AdminPage() {
           <Routes>
             <Route index element={<AdminDashboard />} />
             <Route path="documents" element={<DocumentManager />} />
-            <Route path="students" element={<StudentAccessManager />} />
+            {/* <Route path="students" element={<StudentAccessManager />} /> */}
             <Route path="logs" element={<LogsViewer />} />
             <Route path="stats" element={<StatsPanel />} />
             <Route path="sus" element={<SUSPanel />} />

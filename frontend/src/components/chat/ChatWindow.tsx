@@ -58,6 +58,7 @@ export function ChatWindow() {
   } = useChat()
 
   const messagesContainerRef = useRef<HTMLDivElement>(null)
+  const hasScrolledOnMountRef = useRef(false)
   const hasOnlyWelcome = messages.length === 1
   const hasEnoughMessages = messages.length >= 5
   const susAlreadySubmitted = localStorage.getItem(SUS_SUBMITTED_KEY) === 'true'
@@ -76,10 +77,17 @@ export function ChatWindow() {
     const container = messagesContainerRef.current
     if (!container) return
 
-    container.scrollTo({
-      top: container.scrollHeight,
-      behavior: 'smooth',
-    })
+    if (!hasScrolledOnMountRef.current) {
+      hasScrolledOnMountRef.current = true
+      return
+    }
+
+    if (messages.length === 0) return
+
+    const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 120
+    if (isNearBottom) {
+      container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' })
+    }
   }, [messages])
 
   function handleNewConversation() {
@@ -140,8 +148,7 @@ export function ChatWindow() {
               title="Évaluer UniBot"
               className="gap-1.5"
             >
-              <Star className="w-3.5 h-3.5 text-amber-500" />
-              <span className="hidden sm:inline">Évaluer</span>
+              <Star className="w-5 h5 text-amber-500" />
             </Button>
           )}
           <Button
@@ -151,8 +158,7 @@ export function ChatWindow() {
             title="Nouvelle conversation"
             className="gap-1.5"
           >
-            <MessageSquarePlus className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Nouvelle conversation</span>
+            <MessageSquarePlus className="w-5 h-5" />
           </Button>
         </div>
       </div>
@@ -256,8 +262,8 @@ export function ChatWindow() {
       {/* Input */}
       <div className="flex-shrink-0">
         <InputBar
-              onSendText={handleSendText}
-              onSendVoice={handleSendVoice}
+          onSendText={handleSendText}
+          onSendVoice={handleSendVoice}
           disabled={isLoading}
         />
       </div>

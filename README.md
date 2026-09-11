@@ -384,7 +384,7 @@ cd backend
 # Créer et activer l'environnement virtuel
 python -m venv .venv
 source .venv/bin/activate  # Linux/macOS
-# .\.venv\Scripts\Activate.ps1  # Windows
+# .\.venv\Scripts\Activate.bat  # Windows
 
 # Installer les dépendances
 pip install --upgrade pip
