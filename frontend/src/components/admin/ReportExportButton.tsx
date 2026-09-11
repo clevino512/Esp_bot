@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FileDown, Loader2 } from 'lucide-react'
+import { Loader2, Printer } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import {
   DASHBOARD_STATS_PERIOD_DAYS,
@@ -40,13 +40,14 @@ export function ReportExportButton() {
       size="sm"
       onClick={handleExport}
       disabled={loading}
-      className="flex items-center gap-2"
+      aria-label="Exporter le rapport PDF"
+      title="Exporter le rapport PDF"
+      className="flex items-center justify-center"
     >
       {loading
         ? <Loader2 className="w-4 h-4 animate-spin" />
-        : <FileDown className="w-4 h-4" />
+        : <Printer className="w-4 h-4" />
       }
-      {loading ? 'Génération…' : 'Rapport PDF'}
     </Button>
   )
 }

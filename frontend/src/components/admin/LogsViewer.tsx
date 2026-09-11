@@ -181,10 +181,11 @@ export function LogsViewer() {
             size="sm"
             disabled={filtered.length === 0}
             onClick={() => exportLogsCSV(filtered)}
-            className="flex items-center gap-2 w-full sm:w-auto"
+            aria-label={`Exporter les conversations en CSV (${filtered.length})`}
+            title={`Exporter les conversations en CSV (${filtered.length})`}
+            className="flex items-center justify-center w-full sm:w-auto"
           >
             <FileDown className="w-4 h-4" />
-            Exporter CSV ({filtered.length})
           </Button>
         </div>
       </div>

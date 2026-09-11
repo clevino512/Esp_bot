@@ -6,8 +6,6 @@ import {
   Bell,
   Loader,
   Cpu,
-  Thermometer,
-  MessageSquareText,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
