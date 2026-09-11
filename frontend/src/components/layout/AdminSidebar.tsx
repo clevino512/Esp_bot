@@ -95,7 +95,12 @@ export function AdminSidebar({ open, onClose }: AdminSidebarProps) {
               </div>
             </div>
           )}
-          <Button variant="ghost" size="sm" onClick={logout} className="w-full justify-start gap-2 text-error-600 hover:bg-error-50 dark:text-error-400 dark:hover:bg-error-900/20">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={logout}
+            className="w-full h-auto min-h-8 flex-col items-center justify-center gap-1 py-2 text-error-600 hover:bg-error-50 dark:text-error-400 dark:hover:bg-error-900/20"
+          >
             <LogOut className="w-4 h-4" />
             <span>Déconnexion</span>
           </Button>
