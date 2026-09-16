@@ -56,8 +56,9 @@ pydantic==2.8.2
 pydantic-settings==2.4.0
 python-dotenv==1.0.1
 
-# ── ASR ──────────────────────────────────────────────────────
-# openai-whisper>=20240930   # décommenter pour activer Whisper
+# ── Voice / ASR / TTS ────────────────────────────────────────
+openai-whisper>=20240930
+vosk==0.3.45
 gTTS==2.5.1
 soundfile==0.12.1
 numpy==1.26.4
