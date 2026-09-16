@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class VoiceUploadRequest(BaseModel):
@@ -13,9 +13,11 @@ class VoiceTranscriptionResponse(BaseModel):
     language: str
     duration_seconds: float
     confidence: float
-    created_at: datetime
+    processing_time_ms: float | None = None
+    real_time_factor: float | None = None
+    engine: str | None = None
+    model: str | None = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
 
     class Config:
-        json_encoders = {
-            datetime: lambda v: v.isoformat(),
-        }
+        json_encoders = {datetime: lambda v: v.isoformat()}
