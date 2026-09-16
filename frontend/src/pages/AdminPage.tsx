@@ -8,52 +8,35 @@ import { LogsViewer } from '@/components/admin/LogsViewer'
 import { StatsPanel } from '@/components/admin/StatsPanel'
 import { SUSPanel } from '@/components/admin/SUSPanel'
 import { TestimonialsPanel } from '@/components/admin/TestimonialsPanel'
+import { PFEEvaluationPanel } from '@/components/admin/PFEEvaluationPanel'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { Button } from '@/components/ui/Button'
 import { SettingsPage } from './SettingsPage'
 import { StudentAccessManager } from '@/components/admin/StudentAccessManager'
 
 const PAGE_TITLES: Record<string, string> = {
-  '': 'Tableau de bord',
-  'documents': 'Gestion des documents',
-  'students': 'Étudiants autorisés',
-  'logs': 'Conversations',
-  'stats': 'Statistiques',
-  'sus': 'Évaluation SUS',
-  'testimonials': 'Témoignages utilisateurs',
-  'settings': 'Paramètres',
+  '': 'Tableau de bord', documents: 'Gestion des documents', students: 'Étudiants autorisés',
+  logs: 'Conversations', stats: 'Statistiques', evaluation: 'Évaluation PFE', sus: 'Évaluation SUS',
+  testimonials: 'Témoignages utilisateurs', settings: 'Paramètres',
 }
 
 function usePageTitle() {
   const parts = window.location.pathname.split('/admin/')
-  const sub = parts[1] ?? ''
-  return PAGE_TITLES[sub] ?? 'Administration'
+  return PAGE_TITLES[parts[1] ?? ''] ?? 'Administration'
 }
 
 export function AdminPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const title = usePageTitle()
-
   return (
     <div className="flex h-screen bg-neutral-50 dark:bg-neutral-950 overflow-hidden">
       <AdminSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top bar */}
         <header className="h-16 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 flex items-center px-5 gap-3 flex-shrink-0">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSidebarOpen(true)}
-            className="md:hidden w-9 h-9 p-0"
-          >
-            <Menu className="w-5 h-5" />
-          </Button>
+          <Button variant="ghost" size="sm" onClick={() => setSidebarOpen(true)} className="md:hidden w-9 h-9 p-0"><Menu className="w-5 h-5" /></Button>
           <h1 className="text-base font-semibold text-neutral-900 dark:text-white flex-1">{title}</h1>
           <ThemeToggle />
         </header>
-
-        {/* Content */}
         <main className="flex-1 overflow-y-auto p-5">
           <Routes>
             <Route index element={<AdminDashboard />} />
@@ -61,6 +44,7 @@ export function AdminPage() {
             <Route path="students" element={<StudentAccessManager />} />
             <Route path="logs" element={<LogsViewer />} />
             <Route path="stats" element={<StatsPanel />} />
+            <Route path="evaluation" element={<PFEEvaluationPanel />} />
             <Route path="sus" element={<SUSPanel />} />
             <Route path="testimonials" element={<TestimonialsPanel />} />
             <Route path="settings" element={<SettingsPage />} />
