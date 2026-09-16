@@ -1,0 +1,6 @@
+audio_path,reference
+../data/asr_test/01.wav,Comment obtenir mon relevé de notes ?
+../data/asr_test/02.wav,Quand commencent les inscriptions à l'ESPA ?
+../data/asr_test/03.wav,Quels documents faut-il fournir pour une inscription ?
+../data/asr_test/04.wav,Comment connaître la date de mon examen ?
+../data/asr_test/05.wav,Où puis-je demander une attestation de scolarité ?
