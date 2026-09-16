@@ -1,0 +1,9 @@
+# Depuis D:\TRAV\Esp_bot
+
+git fetch origin
+git switch pfe-whisper-asr
+git pull origin pfe-whisper-asr
+cd backend
+pip install -r requirements.txt
+pytest tests/test_asr_metrics.py tests/test_asr_engine.py tests/test_voice_response.py -v
+python scripts/evaluate_asr.py --dataset evaluation/asr_corpus.csv --output evaluation/results/asr_benchmark.json
