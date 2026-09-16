@@ -28,14 +28,7 @@ async def _read_audio(audio: UploadFile) -> tuple[bytes, str]:
 
 
 @router.post("/transcribe", response_model=VoiceTranscriptionResponse)
-async def transcribe_audio(
-    db: DatabaseDep,
-    audio: UploadFile = File(...),
-    session_id: str | None = Form(None),
-    language: str = Form("fr"),
-    model: str = Form("base"),
-    current_user: OptionalUserDep = None,
-):
+async def transcribe_audio(db: DatabaseDep, audio: UploadFile = File(...), session_id: str | None = Form(None), language: str = Form("fr"), model: str = Form("base"), current_user: OptionalUserDep = None):
     if model not in SUPPORTED_WHISPER_MODELS:
         raise HTTPException(status_code=400, detail="model must be tiny, base or medium")
     audio_data, suffix = await _read_audio(audio)
@@ -43,10 +36,8 @@ async def transcribe_audio(
         result = await ASREngine(language=language, model_name=model).transcribe(audio_data, suffix=suffix)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Audio transcription failed: {exc}") from exc
-
     return VoiceTranscriptionResponse(
-        id=str(uuid.uuid4()),
-        text=result["text"], language=result["language"],
+        id=str(uuid.uuid4()), text=result["text"], language=result["language"],
         duration_seconds=result["duration_seconds"], confidence=result["confidence"],
         processing_time_ms=result["processing_time_ms"], real_time_factor=result["real_time_factor"],
         engine=result["engine"], model=result["model"],
@@ -63,36 +54,20 @@ async def synthesize_speech(text: str = Form(...), language: str = Form("fr")):
 
 
 @router.post("/chat", response_model=dict)
-async def voice_chat(
-    db: DatabaseDep,
-    audio: UploadFile = File(...),
-    session_id: str | None = Form(None),
-    language: str = Form("fr"),
-    student_full_name: str | None = Form(None),
-    student_identifier: str | None = Form(None),
-    current_user: OptionalUserDep = None,
-):
+async def voice_chat(db: DatabaseDep, audio: UploadFile = File(...), session_id: str | None = Form(None), language: str = Form("fr"), student_full_name: str | None = Form(None), student_identifier: str | None = Form(None), current_user: OptionalUserDep = None):
     from app.services.chat_service import ChatService
     audio_data, suffix = await _read_audio(audio)
     transcription = await ASREngine(language=language).transcribe(audio_data, suffix=suffix)
     if not transcription["text"]:
         raise HTTPException(status_code=400, detail="Could not transcribe audio")
-
-    chat_service = ChatService(db)
     try:
-        response = await chat_service.process_message(
-            user_message=transcription["text"], session_id=session_id,
-            student_verification=(StudentVerification(full_name=student_full_name, student_identifier=student_identifier)
-                                  if student_full_name and student_identifier else None),
+        response = await ChatService(db).process_message(
+            user_message=transcription["text"], session_id=session_id, mode="voice",
+            student_verification=(StudentVerification(full_name=student_full_name, student_identifier=student_identifier) if student_full_name and student_identifier else None),
         )
     except PermissionError as exc:
         raise HTTPException(status_code=403, detail=str(exc)) from exc
-
     return {
-        "transcription": {
-            "text": transcription["text"], "confidence": transcription["confidence"],
-            "model": transcription["model"], "processing_time_ms": transcription["processing_time_ms"],
-            "real_time_factor": transcription["real_time_factor"],
-        },
+        "transcription": {"text": transcription["text"], "confidence": transcription["confidence"], "model": transcription["model"], "processing_time_ms": transcription["processing_time_ms"], "real_time_factor": transcription["real_time_factor"]},
         "response": response.model_dump(),
     }
