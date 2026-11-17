@@ -38,12 +38,13 @@ export async function getConversationHistory(sessionId: string): Promise<{ sessi
     session_id: string
     messages: Array<{
       id: string; role: string; content: string
+      mode?: 'text' | 'voice'
       sources: Array<{ document_id: number; document_title: string; content: string; relevance_score: number }> | null
       feedback: 'helpful' | 'not_helpful' | null; created_at: string
     }>
   }>(`/chat/history/${sessionId}`)
   const messages: Message[] = response.data.messages.map(m => ({
-    id: m.id, role: m.role as 'user' | 'assistant', content: m.content, mode: 'text' as const,
+    id: m.id, role: m.role as 'user' | 'assistant', content: m.content, mode: m.mode ?? 'text',
     timestamp: parseApiDate(m.created_at),
     sources: m.sources?.map(s => ({ id: s.document_id.toString(), documentId: s.document_id.toString(), title: s.document_title, content: s.content, relevanceScore: s.relevance_score })),
     feedback: m.feedback,

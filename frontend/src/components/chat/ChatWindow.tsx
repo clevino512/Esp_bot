@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/Button'
 import { useChat } from '@/hooks/useChat'
 import type { Message } from '@/types'
 import { TranscriptVerificationModal } from './TranscriptVerificationModal'
+import toast from 'react-hot-toast'
 
 const SUGGESTED_QUESTIONS = [
   "Quelles sont les dates d'inscription ?",
@@ -52,7 +53,7 @@ export function ChatWindow() {
     restoredFromDate,
     sessionId,
     sendTextMessage,
-    sendVoiceMessage,
+    sendVoiceAudio,
     handleFeedback,
     clearMessages,
   } = useChat()
@@ -65,10 +66,11 @@ export function ChatWindow() {
   const [susOpen, setSusOpen] = useState(false)
   const [newConvOpen, setNewConvOpen] = useState(false)
   const [bannerDismissed, setBannerDismissed] = useState(false)
-  const [pendingTranscriptMessage, setPendingTranscriptMessage] = useState<{
-    content: string
-    mode: 'text' | 'voice'
-  } | null>(null)
+  const [pendingTranscriptMessage, setPendingTranscriptMessage] = useState<
+    | { mode: 'text'; content: string }
+    | { mode: 'voice'; audio: Blob }
+    | null
+  >(null)
 
   const showRestoredBanner =
     historyRestored && restoredMessageCount > 0 && !bannerDismissed
@@ -104,27 +106,41 @@ export function ChatWindow() {
     void sendTextMessage(content)
   }
 
-  function handleSendVoice(content: string) {
-    if (isTranscriptRequest(content)) {
-      setPendingTranscriptMessage({ content, mode: 'voice' })
-      return
+  async function handleSendVoice(audio: Blob): Promise<boolean> {
+    try {
+      return await sendVoiceAudio(audio)
+    } catch (error) {
+      const status = (error as { response?: { status?: number } }).response?.status
+      if (status === 403) {
+        setPendingTranscriptMessage({ mode: 'voice', audio })
+        return true
+      }
+      toast.error('Le message vocal n’a pas pu être envoyé. Réessayez.')
+      return false
     }
-    void sendVoiceMessage(content)
   }
 
-  function submitTranscriptVerification(
+  async function submitTranscriptVerification(
     fullName: string,
     studentIdentifier: string
-  ) {
+  ): Promise<boolean> {
     const pending = pendingTranscriptMessage
-    setPendingTranscriptMessage(null)
-    if (!pending) return
+    if (!pending) return false
 
     const verification = { fullName, studentIdentifier }
-    if (pending.mode === 'voice') {
-      void sendVoiceMessage(pending.content, verification)
-    } else {
+    if (pending.mode === 'text') {
+      setPendingTranscriptMessage(null)
       void sendTextMessage(pending.content, verification)
+      return true
+    }
+
+    try {
+      const sent = await sendVoiceAudio(pending.audio, verification)
+      if (sent) setPendingTranscriptMessage(null)
+      return sent
+    } catch {
+      toast.error('Vérification échouée. Vérifiez le nom et l’identifiant scolaire.')
+      return false
     }
   }
 

@@ -23,6 +23,7 @@ class Message(BaseModel):
     id: str
     role: str = Field(..., pattern="^(user|assistant)$")
     content: str
+    mode: Literal["text", "voice"] = "text"
     sources: list[Source] | None = None
     feedback: FeedbackType | None = None
     created_at: datetime = Field(default_factory=datetime.utcnow)

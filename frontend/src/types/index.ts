@@ -65,7 +65,11 @@ export interface TTSRequest {
   engine?: 'gtts' | 'coqui'
 }
 
-export type RecordingState = 'idle' | 'requesting' | 'recording' | 'processing' | 'error'
+export type RecordingState = 'idle' | 'requesting' | 'recording'
+export interface VoicePlaybackSnapshot {
+  messageId: string | null
+  status: 'idle' | 'speaking' | 'paused'
+}
 
 // ── Documents ─────────────────────────────────────────────────────────────────
 

@@ -5,7 +5,6 @@ import os
 import tempfile
 import time
 import wave
-import io
 
 from app.config import get_settings
 
@@ -50,7 +49,7 @@ class ASREngine:
         if self.mode == "whisper":
             result = await self._transcribe_whisper(audio_data, suffix)
         else:
-            result = await self._transcribe_vosk(audio_data)
+            result = await self._transcribe_vosk(audio_data, suffix)
         result["processing_time_ms"] = round((time.perf_counter() - started) * 1000, 2)
         result["engine"] = self.mode
         result["model"] = self.model_name if self.mode == "whisper" else "vosk"
@@ -91,32 +90,73 @@ class ASREngine:
             except OSError:
                 logger.warning("Unable to remove temporary ASR file %s", tmp_path)
 
-    async def _transcribe_vosk(self, audio_data: bytes) -> dict[str, Any]:
+    async def _transcribe_vosk(self, audio_data: bytes, suffix: str) -> dict[str, Any]:
         from vosk import KaldiRecognizer
         import json
 
         model = self.load_vosk()
-        audio = io.BytesIO(audio_data)
-        with wave.open(audio, "rb") as wf:
-            sample_rate = wf.getframerate()
-            duration = wf.getnframes() / sample_rate
-            recognizer = KaldiRecognizer(model, sample_rate)
-            recognizer.SetWords(True)
-            results = []
-            while True:
-                data = wf.readframes(4000)
-                if not data:
-                    break
-                if recognizer.AcceptWaveform(data):
-                    results.append(json.loads(recognizer.Result()))
-            results.append(json.loads(recognizer.FinalResult()))
+        input_suffix = suffix if suffix.startswith(".") else f".{suffix}"
+        input_path = None
+        wav_path = None
+        try:
+            with tempfile.NamedTemporaryFile(suffix=input_suffix, delete=False) as source_file:
+                source_file.write(audio_data)
+                input_path = source_file.name
+            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as wav_file:
+                wav_path = wav_file.name
 
-        return {
-            "text": " ".join(r.get("text", "") for r in results).strip(),
-            "language": "fr",
-            "duration_seconds": round(duration, 3),
-            "confidence": self._calculate_vosk_confidence(results),
-        }
+            process = await asyncio.create_subprocess_exec(
+                "ffmpeg",
+                "-hide_banner",
+                "-loglevel",
+                "error",
+                "-nostdin",
+                "-y",
+                "-i",
+                input_path,
+                "-vn",
+                "-ac",
+                "1",
+                "-ar",
+                str(settings.VOSK_SAMPLE_RATE),
+                "-c:a",
+                "pcm_s16le",
+                wav_path,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
+            _, stderr = await process.communicate()
+            if process.returncode != 0:
+                logger.warning("Audio conversion for Vosk failed: %s", stderr.decode(errors="replace")[:500])
+                raise ValueError("Audio format could not be decoded")
+
+            with wave.open(wav_path, "rb") as wf:
+                sample_rate = wf.getframerate()
+                duration = wf.getnframes() / sample_rate
+                recognizer = KaldiRecognizer(model, sample_rate)
+                recognizer.SetWords(True)
+                results = []
+                while True:
+                    data = wf.readframes(4000)
+                    if not data:
+                        break
+                    if recognizer.AcceptWaveform(data):
+                        results.append(json.loads(recognizer.Result()))
+                results.append(json.loads(recognizer.FinalResult()))
+
+            return {
+                "text": " ".join(r.get("text", "") for r in results).strip(),
+                "language": "fr",
+                "duration_seconds": round(duration, 3),
+                "confidence": self._calculate_vosk_confidence(results),
+            }
+        finally:
+            for path in (input_path, wav_path):
+                if path and os.path.exists(path):
+                    try:
+                        os.unlink(path)
+                    except OSError:
+                        logger.warning("Unable to remove temporary audio file %s", path)
 
     @staticmethod
     def _calculate_confidence(segments: list[dict]) -> float:

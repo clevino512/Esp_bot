@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 import {
   GraduationCap, User, Mic, ChevronDown, ChevronUp, BookOpen, Lock, FileText,
-  ExternalLink, ThumbsUp, ThumbsDown, Volume2, Loader as Loader2,
+  ExternalLink, ThumbsUp, ThumbsDown, Volume2, Pause, Play, Square,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import ReactMarkdown from 'react-markdown'
@@ -14,7 +14,14 @@ import { Badge } from '@/components/ui/Badge'
 import { SourceDetailModal } from './SourceDetailModal'
 import { isSourceAllowed } from '@/services/documentPermissionService'
 import { parseApiDate } from '@/utils/dateUtils'
-import { playSpeech } from '@/services/voiceService'
+import {
+  getVoicePlaybackSnapshot,
+  pauseVoicePlayback,
+  resumeVoicePlayback,
+  startVoicePlayback,
+  stopVoicePlayback,
+  subscribeToVoicePlayback,
+} from '@/services/voicePlayback'
 
 interface MessageBubbleProps {
   message: Message
@@ -73,7 +80,11 @@ function SourceCard({ source, onOpen }: { source: Source; onOpen: (source: Sourc
 export function MessageBubble({ message, onFeedback }: MessageBubbleProps) {
   const [sourcesOpen, setSourcesOpen] = useState(false)
   const [selectedSource, setSelectedSource] = useState<Source | null>(null)
-  const [isSpeaking, setIsSpeaking] = useState(false)
+  const playback = useSyncExternalStore(
+    subscribeToVoicePlayback,
+    getVoicePlaybackSnapshot,
+    getVoicePlaybackSnapshot
+  )
   const [localFeedback, setLocalFeedback] = useState<'helpful' | 'not_helpful' | null>(
     message.feedback === 'helpful' ? 'helpful' : message.feedback === 'not_helpful' ? 'not_helpful' : null
   )
@@ -82,6 +93,23 @@ export function MessageBubble({ message, onFeedback }: MessageBubbleProps) {
   const isAssistant = message.role === 'assistant'
   const hasSources = (message.sources?.length ?? 0) > 0
   const isFallback = isAssistant && (message.confidence ?? 1) < 0.5
+  const isThisMessagePlaying = playback.messageId === message.id
+
+  useEffect(
+    () => () => stopVoicePlayback(message.id),
+    [message.id]
+  )
+
+  useEffect(() => {
+    const handlePlaybackError = (event: Event) => {
+      const detail = (event as CustomEvent<{ messageId?: string }>).detail
+      if (detail?.messageId === message.id) {
+        toast.error('Le navigateur n’a pas pu lire cette réponse.')
+      }
+    }
+    window.addEventListener('unibot:speech-error', handlePlaybackError)
+    return () => window.removeEventListener('unibot:speech-error', handlePlaybackError)
+  }, [message.id])
 
   function handleFeedbackClick(feedback: 'helpful' | 'not_helpful') {
     if (localFeedback === feedback) return
@@ -89,15 +117,17 @@ export function MessageBubble({ message, onFeedback }: MessageBubbleProps) {
     onFeedback?.(message.id, feedback)
   }
 
-  async function handleSpeak() {
-    if (isSpeaking || !message.content.trim()) return
-    setIsSpeaking(true)
+  function handleSpeak() {
     try {
-      await playSpeech(message.content, 'fr')
-    } catch {
-      toast.error('Impossible de lire la réponse vocale.')
-    } finally {
-      setIsSpeaking(false)
+      if (!isThisMessagePlaying) {
+        startVoicePlayback(message.id, message.content)
+      } else if (playback.status === 'speaking') {
+        pauseVoicePlayback(message.id)
+      } else {
+        resumeVoicePlayback(message.id)
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Impossible de lire la réponse.')
     }
   }
 
@@ -146,9 +176,46 @@ export function MessageBubble({ message, onFeedback }: MessageBubbleProps) {
           <div className={clsx('flex items-center gap-2 px-1', isUser && 'flex-row-reverse')}>
             <span className="text-[11px] text-neutral-400 dark:text-neutral-500">{format(parseApiDate(message.timestamp), 'HH:mm', { locale: fr })}</span>
             {isAssistant && (
-              <button type="button" onClick={handleSpeak} disabled={isSpeaking} title="Écouter la réponse" className="p-0.5 rounded text-neutral-300 dark:text-neutral-600 hover:text-primary-500 disabled:opacity-60 transition-colors">
-                {isSpeaking ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Volume2 className="w-3.5 h-3.5" />}
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={handleSpeak}
+                  aria-label={
+                    !isThisMessagePlaying
+                      ? 'Lire la réponse'
+                      : playback.status === 'speaking'
+                      ? 'Mettre la lecture en pause'
+                      : 'Reprendre la lecture'
+                  }
+                  title={
+                    !isThisMessagePlaying
+                      ? 'Lire la réponse'
+                      : playback.status === 'speaking'
+                      ? 'Mettre en pause'
+                      : 'Reprendre'
+                  }
+                  className="p-0.5 rounded text-neutral-400 dark:text-neutral-500 hover:text-primary-500 transition-colors"
+                >
+                  {!isThisMessagePlaying ? (
+                    <Volume2 className="w-3.5 h-3.5" aria-hidden="true" />
+                  ) : playback.status === 'speaking' ? (
+                    <Pause className="w-3.5 h-3.5" aria-hidden="true" />
+                  ) : (
+                    <Play className="w-3.5 h-3.5" aria-hidden="true" />
+                  )}
+                </button>
+                {isThisMessagePlaying && (
+                  <button
+                    type="button"
+                    onClick={() => stopVoicePlayback(message.id)}
+                    aria-label="Arrêter la lecture"
+                    title="Arrêter"
+                    className="p-0.5 rounded text-neutral-400 dark:text-neutral-500 hover:text-error-500 transition-colors"
+                  >
+                    <Square className="w-3 h-3" aria-hidden="true" />
+                  </button>
+                )}
+              </>
             )}
             {isAssistant && !isFallback && onFeedback && (
               <div className="flex items-center gap-1">

@@ -105,7 +105,35 @@ class ChatService:
         if not conversation:
             return []
         messages = await self.conversation_repo.get_messages(conversation.id)
-        return [Message(id=str(m.id), role=m.role, content=m.content, sources=json.loads(m.sources) if m.sources and m.role == "assistant" else None, feedback=m.feedback, created_at=m.created_at) for m in messages]
+        history = []
+        current_mode = "text"
+        for message in messages:
+            message_sources = None
+            if message.role == "user":
+                stored_metadata = json.loads(message.sources) if message.sources else {}
+                current_mode = (
+                    stored_metadata.get("interaction_mode", "text")
+                    if isinstance(stored_metadata, dict)
+                    else "text"
+                )
+            elif message.sources:
+                message_sources = json.loads(message.sources)
+                if isinstance(message_sources, list):
+                    for source in message_sources:
+                        if isinstance(source, dict) and "document_title" not in source:
+                            source["document_title"] = source.pop("title", "Document")
+            history.append(
+                Message(
+                    id=str(message.id),
+                    role=message.role,
+                    content=message.content,
+                    mode=current_mode,
+                    sources=message_sources,
+                    feedback=message.feedback,
+                    created_at=message.created_at,
+                )
+            )
+        return history
 
     async def submit_feedback(self, message_id: str, feedback_type: str) -> bool:
         try:

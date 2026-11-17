@@ -1,10 +1,7 @@
-from typing import Any
 import logging
 import tempfile
 import os
 import io
-
-from pydub import AudioSegment
 
 from app.config import get_settings
 
@@ -42,17 +39,10 @@ class TTSEngine:
     async def _synthesize_gtts(self, text: str) -> bytes:
         from gtts import gTTS
 
-        mp3_buffer = io.BytesIO()
         tts = gTTS(text=text, lang=self.language, slow=False)
+        mp3_buffer = io.BytesIO()
         tts.write_to_fp(mp3_buffer)
-        mp3_buffer.seek(0)
-
-        audio = AudioSegment.from_mp3(mp3_buffer)
-        wav_buffer = io.BytesIO()
-        audio.export(wav_buffer, format="wav")
-        wav_buffer.seek(0)
-
-        return wav_buffer.read()
+        return mp3_buffer.getvalue()
 
     async def _synthesize_coqui(self, text: str) -> bytes:
         import asyncio

@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/Input'
 interface TranscriptVerificationModalProps {
   open: boolean
   onClose: () => void
-  onSubmit: (fullName: string, studentIdentifier: string) => void
+  onSubmit: (fullName: string, studentIdentifier: string) => void | boolean | Promise<boolean>
 }
 
 export function TranscriptVerificationModal({
@@ -18,17 +18,27 @@ export function TranscriptVerificationModal({
   const [fullName, setFullName] = useState('')
   const [studentIdentifier, setStudentIdentifier] = useState('')
   const [error, setError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  function handleSubmit(event: React.FormEvent) {
+  async function handleSubmit(event: React.FormEvent) {
     event.preventDefault()
+    if (isSubmitting) return
     if (!fullName.trim() || !studentIdentifier.trim()) {
       setError('Le nom complet et l’identifiant scolaire sont obligatoires.')
       return
     }
     setError('')
-    onSubmit(fullName.trim(), studentIdentifier.trim())
-    setFullName('')
-    setStudentIdentifier('')
+    setIsSubmitting(true)
+    try {
+      const submitted = await onSubmit(fullName.trim(), studentIdentifier.trim())
+      if (submitted === false) return
+      setFullName('')
+      setStudentIdentifier('')
+    } catch {
+      setError('La vérification a échoué. Vérifiez les informations puis réessayez.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   function handleClose() {
@@ -82,7 +92,7 @@ export function TranscriptVerificationModal({
           <Button type="button" variant="outline" onClick={handleClose}>
             Annuler
           </Button>
-          <Button type="submit">Vérifier et continuer</Button>
+          <Button type="submit" loading={isSubmitting}>Vérifier et continuer</Button>
         </div>
       </form>
     </Modal>

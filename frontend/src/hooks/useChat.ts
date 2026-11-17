@@ -9,6 +9,7 @@ import {
   submitFeedback,
   getConversationHistory,
 } from '@/services/chatService'
+import { voiceChat } from '@/services/voiceService'
 import { parseApiDate } from '@/utils/dateUtils'
 
 const SESSION_KEY = 'unibot_session_id'
@@ -44,7 +45,7 @@ export function useChat() {
   const [restoredMessageCount, setRestoredMessageCount] = useState(0)
   const [restoredFromDate, setRestoredFromDate] = useState<Date | null>(null)
   const sessionId = useRef<string>(getOrCreateSessionId())
-  // Keep a ref so sendTextMessage / sendVoiceMessage can read the latest
+  // Keep a ref so sendTextMessage / sendVoiceAudio can read the latest
   // messages without being stale (avoids adding `messages` to dep arrays).
   const messagesRef = useRef(messages)
   useEffect(() => {
@@ -162,22 +163,26 @@ export function useChat() {
     [isLoading, addMessage, buildHistory]
   )
 
-  const sendVoiceMessage = useCallback(
+  const sendVoiceAudio = useCallback(
     async (
-      transcript: string,
+      audio: Blob,
       studentVerification?: ChatRequest['studentVerification']
-    ) => {
-      if (!transcript.trim() || isLoading) return
+    ): Promise<boolean> => {
+      if (!audio.size || isLoading) return false
 
-      const userMsg = createUserMessage(transcript.trim(), 'voice')
-      addMessage(userMsg)
+      const userMsg: Message = {
+        id: crypto.randomUUID(),
+        role: 'user',
+        content: 'Transcription du message vocal…',
+        mode: 'voice',
+        timestamp: new Date(),
+      }
       setIsLoading(true)
-
-      const historySnapshot = buildHistory([...messagesRef.current, userMsg])
-
       const typingId = crypto.randomUUID()
+      const historySnapshot = buildHistory(messagesRef.current)
       setMessages(prev => [
         ...prev,
+        userMsg,
         {
           id: typingId,
           role: 'assistant',
@@ -189,26 +194,44 @@ export function useChat() {
       ])
 
       try {
-        const response = await sendMessage({
-          message: transcript.trim(),
-          sessionId: sessionId.current,
-          mode: 'voice',
-          history: historySnapshot,
+        const result = await voiceChat(
+          audio,
+          sessionId.current,
+          'fr',
           studentVerification,
-        })
-        setMessages(prev => prev.filter(m => m.id !== typingId))
-        addMessage(createAssistantMessage(response, 'voice'))
-      } catch (err) {
-        setMessages(prev => prev.filter(m => m.id !== typingId))
-        const error = err as { response?: { data?: { detail?: string } } }
-        toast.error(
-          error.response?.data?.detail || 'Erreur lors du traitement vocal.'
+          historySnapshot
         )
+        setMessages(prev => [
+          ...prev
+            .filter(message => message.id !== typingId)
+            .map(message =>
+              message.id === userMsg.id
+                ? { ...message, content: result.transcription.text }
+                : message
+            ),
+          createAssistantMessage(result.response, 'voice'),
+        ])
+        return true
+      } catch (err) {
+        setMessages(prev => prev.filter(message => message.id !== typingId && message.id !== userMsg.id))
+        const error = err as {
+          response?: { data?: { detail?: string }; status?: number }
+          code?: string
+        }
+        if (error.response?.status === 403) throw err
+
+        toast.error(
+          error.response?.data?.detail ||
+          (error.code === 'ECONNABORTED'
+            ? 'Le traitement audio prend trop de temps. Réessayez.'
+            : 'Échec de l’envoi audio. Vérifiez votre connexion et réessayez.')
+        )
+        return false
       } finally {
         setIsLoading(false)
       }
     },
-    [isLoading, addMessage, buildHistory]
+    [isLoading, buildHistory]
   )
 
   const handleFeedback = useCallback(
@@ -249,7 +272,7 @@ export function useChat() {
     sessionStartedAt: getSessionDate(),
     sessionId: sessionId.current,
     sendTextMessage,
-    sendVoiceMessage,
+    sendVoiceAudio,
     handleFeedback,
     clearMessages,
   }
