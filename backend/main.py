@@ -1,5 +1,19 @@
 # ── Configuration environnement (DOIT être la toute première action) ──
 import os
+import shutil
+import tempfile
+from pathlib import Path
+
+if shutil.which("ffmpeg") is None:
+    import imageio_ffmpeg
+    _src = Path(imageio_ffmpeg.get_ffmpeg_exe())
+    _dir = Path(tempfile.gettempdir()) / "unibot_ffmpeg"
+    _dir.mkdir(parents=True, exist_ok=True)
+    _dst = _dir / "ffmpeg.exe"
+    if not _dst.exists():
+        shutil.copy2(_src, _dst)
+    os.environ["PATH"] = str(_dir) + os.pathsep + os.environ["PATH"]
+
 os.environ.setdefault("HF_HUB_OFFLINE", "1")
 os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
 os.environ.setdefault("HF_HUB_DISABLE_XET", "1")
