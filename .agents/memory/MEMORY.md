@@ -6,3 +6,4 @@
 - [Chat timestamp timezones](chat-timezones.md) — les dates UTC de l’API doivent porter leur fuseau avant l’affichage local du chat
 - [Tracked Vite cache](tracked-vite-cache.md) — le redémarrage du frontend peut modifier `node_modules/.vite/deps` suivi par Git ; restaurer ces fichiers avant de conclure
 - [Document chunk statistics](document-chunk-statistics.md) — Chroma et `documents.chunk_count` doivent rester alignés pour que les statistiques admin ne retombent pas à zéro
+- [Report and implementation alignment](report-implementation-alignment.md) — le mémoire doit distinguer la validation RAG du PFA et les fonctionnalités vocales/admin prévues pour le PFE
